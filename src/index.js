@@ -3,7 +3,7 @@ var app = express();
 var bodyParser = require('body-parser');
 var multer = require('multer');
 const path = require('path');
-const excelRead = require('./helpers/excel');
+const excel = require('./helpers/excel');
 const { randomUUID } = require('crypto');
 
 app.use(bodyParser.json());
@@ -20,7 +20,7 @@ var upload = multer({ //multer settings
   storage: storage,
   fileFilter: function (req, file, callback) { //file filter
     if (['xls', 'xlsx'].indexOf(file.originalname.split('.')[file.originalname.split('.').length - 1]) === -1) {
-      return callback(new Error('Wrong extension type'));
+      return callback(new Error('Định danh file không hợp lệ'));
     }
     callback(null, true);
   }
@@ -32,19 +32,31 @@ app.post('/upload', function (req, res) {
       res.json({ error_code: 1, err_desc: err });
       return;
     }
+
+    let headers = "";
+    if(req.file.originalname.toLowerCase().includes('trien_khai')) {
+      headers = excel.trienKhaiHeaders;
+    }
+    else if(req.file.originalname.toLowerCase().includes('kinh_doanh')) {
+      headers = excel.kinhDoanhHeaders;
+    }
+    else {
+      res.json({ error_code: 3, err_desc: 'Tên file không hợp lệ. Tên phải chứa "kinh_doanh" hoặc "trien_khai"' });
+      return;
+    }
     /** Multer gives us file info in req.file object */
     if (!req.file) {
-      res.json({ error_code: 1, err_desc: "No file passed" });
+      res.json({ error_code: 1, err_desc: "Không có file được tải lên" });
       return;
     }
     /** Check the extension of the incoming file and 
      *  use the appropriate module
      */
     try {
-      const data = excelRead(req.file.path);
+      const data = excel.readFile(req.file.path, headers);
       res.json({ error_code: 0, err_desc: null, data });
     } catch (e) {
-      res.json({ error_code: 1, err_desc: "Corupted excel file" });
+      res.json({ error_code: 2, err_desc: "File lỗi. Không thể đọc file" });
     }
   })
 });
