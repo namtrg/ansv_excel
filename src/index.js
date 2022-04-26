@@ -38,7 +38,13 @@ app.post('/upload', function (req, res) {
       return;
     }
     const time = new Date();
-    console.log(`[${time.getFullYear()}/${time.getMonth() + 1}/${time.getDate()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}]` + " New file uploaded: " + req.file.originalname);
+
+    if (!req.file) {
+      res.json({ error_code: 1, err_desc: "Không có file được tải lên" });
+      return;
+    }
+    
+    console.log(`[${time.getFullYear()}/${time.getMonth() + 1}/${time.getDate()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}]` + " New file uploaded: " + req.file?.originalname);
 
     let headers = -1;
     let fileType = "Unknown";
@@ -55,10 +61,6 @@ app.post('/upload', function (req, res) {
       return;
     }
     /** Multer gives us file info in req.file object */
-    if (!req.file) {
-      res.json({ error_code: 1, err_desc: "Không có file được tải lên" });
-      return;
-    }
     /** Check the extension of the incoming file and 
      *  use the appropriate module
      */
