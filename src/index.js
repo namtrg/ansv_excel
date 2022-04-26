@@ -31,7 +31,7 @@ var upload = multer({
   fileFilter: function (req, file, callback) {
     //file filter
     const fileExtension = path.extname(file.originalname);
-    console.log(fileExtension);
+    // console.log(fileExtension);
     if ([".xls", ".xlsx"].indexOf(fileExtension) === -1) {
       return callback(new Error("Định danh file không hợp lệ"));
     }
