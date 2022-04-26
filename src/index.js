@@ -38,6 +38,16 @@ var upload = multer({
     callback(null, true);
   },
 }).single("file");
+
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
+
 /** API path that will upload the files */
 app.post("/upload", function (req, res) {
   upload(req, res, function (error) {

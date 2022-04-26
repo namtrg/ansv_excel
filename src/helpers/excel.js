@@ -209,6 +209,11 @@ const trienKhaiHeaders = [
   ]
 ]
 
+const kinhDoanhHeadersPosition = {}
+kinhDoanhHeaders.forEach((it, index) => kinhDoanhHeadersPosition[it[0]] = index)
+
+const trienKhaiHeadersPosition = {}
+trienKhaiHeaders.forEach((it, index) => trienKhaiHeadersPosition[it[0]] = index)
 
 const readFile = (filePath, headers) => {
   const fileData = xlsx.parse(filePath);
@@ -223,6 +228,15 @@ const readFile = (filePath, headers) => {
   }).filter(item => item);
 
   return final;
+}
+
+const exportFile = (data, type) => {
+  const exportData = data.map(it => {
+    const res = [];
+    Object.keys(it).forEach(key => {
+      res.push(it[key]);
+    });
+  })
 }
 
 module.exports = {
