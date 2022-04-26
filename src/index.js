@@ -18,14 +18,10 @@ var storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     var datetimestamp = Date.now() + "_" + randomUUID();
-    cb(
-      null,
-      file.fieldname +
-        "_" +
-        datetimestamp +
-        "." +
-        file.originalname.split(".")[file.originalname.split(".").length - 1]
-    );
+    const newFileName = `${file.fieldname}_${datetimestamp}${path.extname(
+      file.originalname
+    )}`;
+    cb(null, newFileName);
   },
 });
 var upload = multer({
@@ -34,11 +30,9 @@ var upload = multer({
   dest: path.join(__dirname, "./tmp"),
   fileFilter: function (req, file, callback) {
     //file filter
-    if (
-      ["xls", "xlsx"].indexOf(
-        file.originalname.split(".")[file.originalname.split(".").length - 1]
-      ) === -1
-    ) {
+    const fileExtension = path.extname(file.originalname);
+    console.log(fileExtension);
+    if ([".xls", ".xlsx"].indexOf(fileExtension) === -1) {
       return callback(new Error("Định danh file không hợp lệ"));
     }
     callback(null, true);
@@ -46,19 +40,19 @@ var upload = multer({
 }).single("file");
 /** API path that will upload the files */
 app.post("/upload", function (req, res) {
-  upload(req, res, function (err) {
-    if (err) {
-      res.json({
+  upload(req, res, function (error) {
+    if (error) {
+      res.status(400).json({
         error_code: 4,
         err_desc: "Định dạng tệp phải là xls hoặc xlsx",
-        error_detail: e,
+        error_detail: error,
       });
       return;
     }
     const time = new Date();
 
     if (!req.file) {
-      res.json({
+      res.status(400).json({
         error_code: 1,
         err_desc: "Không có file được tải lên",
         error_detail: "",
@@ -89,7 +83,7 @@ app.post("/upload", function (req, res) {
       fileType = "Kinh doanh";
       fileTypeCode = 1;
     } else {
-      res.json({
+      res.status(400).json({
         error_code: 3,
         err_desc:
           'Tên file không hợp lệ. Tên phải chứa "kinh_doanh" hoặc "trien_khai"',
@@ -103,19 +97,19 @@ app.post("/upload", function (req, res) {
      */
     try {
       const data = excel.readFile(req.file.path, headers);
-      res.json({
+      res.status(200).json({
         error_code: 0,
         fileType,
         fileTypeCode,
         err_desc: null,
         data,
       });
-    } catch (e) {
-      console.log(e);
-      res.json({
+    } catch (error) {
+      console.log(error);
+      res.status(400).json({
         error_code: 2,
         err_desc: "File lỗi. Không thể đọc file",
-        error_detail: e,
+        error_detail: error,
       });
     }
     deleteFile(req.file.path)
@@ -124,7 +118,7 @@ app.post("/upload", function (req, res) {
   });
 });
 
-const PORT = process.env.PORT || 3000; 
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, function () {
   console.log("Server running in port " + PORT);
