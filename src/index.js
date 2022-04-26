@@ -34,10 +34,11 @@ var upload = multer({ //multer settings
 app.post('/upload', function (req, res) {
   upload(req, res, function (err) {
     if (err) {
-      res.json({ error_code: 4, err_desc: err });
+      res.json({ error_code: 4, err_desc: "Định dạng tệp phải là xls hoặc xlsx" });
       return;
     }
-    console.log("New file uploaded: " + req.file.path);
+    const time = new Date();
+    console.log(`[${time.getFullYear()}/${time.getMonth() + 1}/${time.getDate()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}]` + " New file uploaded: " + req.file.originalname);
 
     let headers = -1;
     let fileType = "Unknown";
