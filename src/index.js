@@ -8,6 +8,8 @@ const { randomUUID } = require('crypto');
 const util = require('util');
 const fs = require('fs');
 
+const deleteFile = util.promisify(fs.unlink);
+
 app.use(bodyParser.json());
 var storage = multer.diskStorage({ //multers disk storage settings
   destination: function (req, file, cb) {
@@ -39,11 +41,11 @@ app.post('/upload', function (req, res) {
 
     let headers = -1;
     let fileType = "Unknown";
-    if(req.file.originalname.toLowerCase().includes('trien_khai')) {
+    if (req.file.originalname.toLowerCase().includes('trien_khai')) {
       headers = excel.trienKhaiHeaders;
       fileType = "Triển khai";
     }
-    else if(req.file.originalname.toLowerCase().includes('kinh_doanh')) {
+    else if (req.file.originalname.toLowerCase().includes('kinh_doanh')) {
       headers = excel.kinhDoanhHeaders;
       fileType = "Kinh doanh";
     }
@@ -65,8 +67,9 @@ app.post('/upload', function (req, res) {
     } catch (e) {
       res.json({ error_code: 2, err_desc: "File lỗi. Không thể đọc file" });
     }
-    const deleteFile = util.promisify(fs.unlink);
-    deleteFile(req.file.path);
+    deleteFile(req.file.path)
+      .then(res => console.log("Cleaned file " + req.file.path))
+      .catch(err => console.log(err));
   })
 });
 
