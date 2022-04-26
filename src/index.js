@@ -44,7 +44,7 @@ app.post('/upload', function (req, res) {
       return;
     }
 
-    console.log(`[${time.getFullYear()}/${time.getMonth() + 1}/${time.getDate()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}]` + " New file uploaded: " + req.file?.originalname);
+    console.log(`[${time.getFullYear()}/${time.getMonth() + 1}/${time.getDate()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}]` + " New file uploaded: " + req.file?.originalname + ` from ip: ${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`);
 
     let headers = -1;
     let fileType = "Unknown";
