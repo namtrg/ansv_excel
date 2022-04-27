@@ -112,7 +112,7 @@ const exportFile = async (data, type) => {
 
   await fs.writeFile(exportFilePath, buffer);
 
-  const validUntil = new Date() + 10 * 60 * 1000;
+  const validUntil = new Date().getTime() + 10 * 60 * 1000;
 
   setTimeout(() => {
     fs.unlink(exportFilePath, (err) => {
