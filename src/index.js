@@ -133,7 +133,7 @@ app.post("/export", async (req, res) => {
   const fileTypeCode = req.body.fileTypeCode;
   if (!data) {
     res.status(400).json({
-      error_code: 1,
+      error_code: 5,
       err_desc: "Không có dữ liệu",
       error_detail: "",
     });
@@ -141,7 +141,7 @@ app.post("/export", async (req, res) => {
   }
   if (fileTypeCode !== 0 && fileTypeCode !== 1) {
     res.status(400).json({
-      error_code: 1,
+      error_code: 6,
       err_desc: "fileTypeCode phải là 0 hoặc 1",
       error_detail: "",
     });
@@ -154,7 +154,7 @@ app.post("/export", async (req, res) => {
   res.status(200).json({
     error_code: 0,
     err_desc: null,
-    file: exportFileName,
+    data: { file: exportFileName },
   });
 
   // res.writeHead(200, {
@@ -166,11 +166,11 @@ app.post("/export", async (req, res) => {
   // res.end(new Buffer.from(await excel.exportFile(data, fileTypeCode), "base64"));
 });
 
-app.get('/download', (req, res) => {
+app.get("/download", (req, res) => {
   const file = req.query.file;
   const exportFolder = path.join(__dirname, "export");
   const filePath = path.join(exportFolder, file);
-  if(!fs.existsSync(filePath)) {
+  if (!fs.existsSync(filePath)) {
     res.status(400).json({
       error_code: 1,
       err_desc: "Không tìm thấy file",
@@ -179,7 +179,7 @@ app.get('/download', (req, res) => {
     return;
   }
   res.download(filePath);
-})
+});
 
 const PORT = process.env.PORT || 3000;
 
