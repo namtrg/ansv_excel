@@ -128,6 +128,59 @@ app.post("/upload", function (req, res) {
   });
 });
 
+app.post("/export", async (req, res) => {
+  const data = req.body.data;
+  const fileTypeCode = req.body.fileTypeCode;
+  if (!data) {
+    res.status(400).json({
+      error_code: 1,
+      err_desc: "Không có dữ liệu",
+      error_detail: "",
+    });
+    return;
+  }
+  if (fileTypeCode !== 0 && fileTypeCode !== 1) {
+    res.status(400).json({
+      error_code: 1,
+      err_desc: "fileTypeCode phải là 0 hoặc 1",
+      error_detail: "",
+    });
+    return;
+  }
+  const { fileExportPath, exportFileName } = await excel.exportFile(
+    data,
+    fileTypeCode
+  );
+  res.status(200).json({
+    error_code: 0,
+    err_desc: null,
+    file: exportFileName,
+  });
+
+  // res.writeHead(200, {
+  //   "Content-Type":
+  //     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  //   "Content-Disposition":
+  //     "attachment; filename=" + `${randomUUID()}-${fileTypeCode}.xlsx`,
+  // });
+  // res.end(new Buffer.from(await excel.exportFile(data, fileTypeCode), "base64"));
+});
+
+app.get('/download', (req, res) => {
+  const file = req.query.file;
+  const exportFolder = path.join(__dirname, "export");
+  const filePath = path.join(exportFolder, file);
+  if(!fs.existsSync(filePath)) {
+    res.status(400).json({
+      error_code: 1,
+      err_desc: "Không tìm thấy file",
+      error_detail: "",
+    });
+    return;
+  }
+  res.download(filePath);
+})
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, function () {
