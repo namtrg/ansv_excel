@@ -172,7 +172,7 @@ app.get("/download", (req, res) => {
   const exportFolder = path.join(__dirname, "export");
   const filePath = path.join(exportFolder, file);
   if (!fs.existsSync(filePath)) {
-    res.status(400).json({
+    res.status(404).json({
       error_code: 1,
       err_desc: "Không tìm thấy file",
       error_detail: "",
