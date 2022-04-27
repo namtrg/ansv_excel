@@ -90,7 +90,7 @@ const readFile = (filePath, headers) => {
   return final;
 };
 
-const exportFile = async(data, type) => {
+const exportFile = async (data, type) => {
   // type = 1: kinh doanh, type = 0: trien khai
   // const headers =
   //   (type == 1 ? kinhDoanhHeaders : trienKhaiHeaders).map((it) => it[0]);
@@ -99,7 +99,9 @@ const exportFile = async(data, type) => {
   const templateFile = `${type == 1 ? "kinh_doanh" : "trien_khai"}.xlsx`;
   const templateFiePath = path.join(__dirname, "../", "template", templateFile);
 
-  const exportFileName = `${new Date().getTime()}-${randomUUID()}-${type == 1 ? "kinhdoanh" : "trienkhai"}_export.xlsx`;
+  const exportFileName = `${new Date().getTime()}-${randomUUID()}-${
+    type == 1 ? "kinhdoanh" : "trienkhai"
+  }_export.xlsx`;
   const exportFilePath = path.join(__dirname, "../", "export", exportFileName);
   const exportFolder = path.join(__dirname, "../", "export");
 
@@ -110,7 +112,15 @@ const exportFile = async(data, type) => {
 
   await fs.writeFile(exportFilePath, buffer);
 
-  return { exportFilePath, exportFileName, exportFolder };
+  const validUntil = new Date() + 10 * 60 * 1000;
+
+  setTimeout(() => {
+    fs.unlink(exportFilePath, (err) => {
+      if (err) console.log(err);
+    });
+  }, 10 * 60 * 1000);
+
+  return { exportFilePath, exportFileName, exportFolder, validUntil };
 };
 
 module.exports = {

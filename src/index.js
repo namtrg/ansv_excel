@@ -7,6 +7,7 @@ const excel = require("./helpers/excel");
 const { randomUUID } = require("crypto");
 const util = require("util");
 const fs = require("fs");
+const schedule = require("node-schedule");
 
 const deleteFile = util.promisify(fs.unlink);
 
@@ -147,14 +148,14 @@ app.post("/export", async (req, res) => {
     });
     return;
   }
-  const { fileExportPath, exportFileName } = await excel.exportFile(
+  const { fileExportPath, exportFileName, validUntil } = await excel.exportFile(
     data,
     fileTypeCode
   );
   res.status(200).json({
     error_code: 0,
     err_desc: null,
-    data: { file: exportFileName },
+    data: { file: exportFileName, validUntil },
   });
 
   // res.writeHead(200, {
@@ -185,4 +186,21 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, function () {
   console.log("Server running in port " + PORT);
+});
+
+
+schedule.scheduleJob("0 */1 * * *", async () => {
+  const exportFolder = path.join(__dirname, "export");
+  const files = fs.readdirSync(exportFolder);
+  for (const file of files) {
+    const filePath = path.join(exportFolder, file);
+    const stat = fs.statSync(filePath);
+    if (stat.isFile()) {
+      const time = new Date(stat.mtime);
+      const validUntil = new Date(time.getTime() + 1000 * 60 * 60 * 24);
+      if (validUntil < new Date()) {
+        await deleteFile(filePath);
+      }
+    }
+  }
 });
