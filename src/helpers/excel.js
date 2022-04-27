@@ -99,9 +99,9 @@ const exportFile = async (data, type) => {
   const templateFile = `${type == 1 ? "kinh_doanh" : "trien_khai"}.xlsx`;
   const templateFiePath = path.join(__dirname, "../", "template", templateFile);
 
-  const exportFileName = `${new Date().getTime()}-${randomUUID()}-${
-    type == 1 ? "kinhdoanh" : "trienkhai"
-  }_export.xlsx`;
+  const exportFileName = `${
+    type == 1 ? "kinh_doanh" : "trien_khai"
+  }_export_${new Date().getTime()}-${randomUUID()}.xlsx`;
   const exportFilePath = path.join(__dirname, "../", "export", exportFileName);
   const exportFolder = path.join(__dirname, "../", "export");
 
