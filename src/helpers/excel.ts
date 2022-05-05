@@ -1,7 +1,7 @@
 const path = require("path");
 const xlsx = require("node-xlsx");
 const xlsxTemplate = require("xlsx-template");
-const { randomUUID } = require("crypto");
+import { randomUUID } from "crypto";
 const fs = require("fs").promises;
 
 const kinhDoanhHeaders = [
