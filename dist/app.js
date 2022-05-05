@@ -40,6 +40,7 @@ app.get("/download", nocache(), (req, res) => {
 const promise_1 = require("mysql2/promise");
 // create the connection to database
 const { DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS } = process.env;
+console.log({ DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS });
 connection = (0, promise_1.createPool)({
     host: DB_HOST,
     port: +DB_PORT || 3306,
