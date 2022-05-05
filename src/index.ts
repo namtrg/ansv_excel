@@ -3,6 +3,9 @@ const fs = require("fs");
 const schedule = require("node-schedule");
 const deleteFile = require("util").promisify(fs.unlink);
 import app from "./app";
+import { config } from "dotenv";
+
+config();
 
 schedule.scheduleJob("0 */1 * * *", async () => {
   const exportFolder = path.join(__dirname, "export");
