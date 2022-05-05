@@ -29,4 +29,8 @@ schedule.scheduleJob("0 */1 * * *", () => __awaiter(void 0, void 0, void 0, func
         }
     }
 }));
-(0, app_1.default)();
+const PORT = process.env.PORT || 3001;
+// import { AppDataSource } from "./data-source";
+app_1.default.listen(PORT, function () {
+    console.log("Server running in port " + PORT);
+});
