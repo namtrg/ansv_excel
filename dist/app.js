@@ -5,29 +5,25 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const fs = require("fs");
 const morgan = require("morgan");
+const nocache = require('nocache');
 const export_1 = require("./controller/export");
 const import_1 = require("./controller/import");
 const app = express();
 app.use(bodyParser.json());
 let connection;
+app.set("etag", false);
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     next();
 });
 app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]'));
-function nocache(req, res, next) {
-    res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
-    res.header("Expires", "-1");
-    res.header("Pragma", "no-cache");
-    next();
-}
 /** API path that will upload the files */
-app.post("/upload", nocache, import_1.default);
-app.post("/export", nocache, (req, res) => {
+app.post("/upload", nocache(), import_1.default);
+app.post("/export", nocache(), (req, res) => {
     (0, export_1.default)(req, res, connection);
 });
-app.get("/download", nocache, (req, res) => {
+app.get("/download", nocache(), (req, res) => {
     const file = req.query.file;
     const exportFolder = path.join(__dirname, "export");
     const filePath = path.join(exportFolder, file);
