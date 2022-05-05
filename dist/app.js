@@ -16,12 +16,18 @@ app.use(function (req, res, next) {
     next();
 });
 app.use(morgan(':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]'));
+function nocache(req, res, next) {
+    res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
+    res.header("Expires", "-1");
+    res.header("Pragma", "no-cache");
+    next();
+}
 /** API path that will upload the files */
-app.post("/upload", import_1.default);
-app.post("/export", (req, res) => {
+app.post("/upload", nocache, import_1.default);
+app.post("/export", nocache, (req, res) => {
     (0, export_1.default)(req, res, connection);
 });
-app.get("/download", (req, res) => {
+app.get("/download", nocache, (req, res) => {
     const file = req.query.file;
     const exportFolder = path.join(__dirname, "export");
     const filePath = path.join(exportFolder, file);
