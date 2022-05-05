@@ -99,7 +99,7 @@ const exportFile = async (data, type) => {
   const templateFiePath = path.join(__dirname, "../", "template", templateFile);
 
   const exportFileName = `${
-    type == 1 ? "Trien khai " : type == 2 ? "Vien thong " : "Chuyen doi so "
+    type == 1 ? "Trien khai" : type == 2 ? "Vien thong" : "Chuyen doi so"
   }_export_${new Date().getTime()}-${randomUUID()}.xlsx`;
   const exportFilePath = path.join(__dirname, "../", "export", exportFileName);
   const exportFolder = path.join(__dirname, "../", "export");

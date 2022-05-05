@@ -27,14 +27,21 @@ app.use(
   )
 );
 
-/** API path that will upload the files */
-app.post("/upload", importController);
+function nocache(req, res, next) {
+  res.header("Cache-Control", "private, no-cache, no-store, must-revalidate");
+  res.header("Expires", "-1");
+  res.header("Pragma", "no-cache");
+  next();
+}
 
-app.post("/export", (req, res) => {
+/** API path that will upload the files */
+app.post("/upload", nocache, importController);
+
+app.post("/export", nocache, (req, res) => {
   exportController(req, res, connection);
 });
 
-app.get("/download", (req, res) => {
+app.get("/download", nocache, (req, res) => {
   const file = req.query.file;
   const exportFolder = path.join(__dirname, "export");
   const filePath = path.join(exportFolder, file as string);
