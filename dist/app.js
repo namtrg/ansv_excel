@@ -5,7 +5,7 @@ const bodyParser = require("body-parser");
 const path = require("path");
 const fs = require("fs");
 const morgan = require("morgan");
-const nocache = require('nocache');
+const nocache = require("nocache");
 const export_1 = require("./controller/export");
 const import_1 = require("./controller/import");
 const app = express();
@@ -39,12 +39,13 @@ app.get("/download", nocache(), (req, res) => {
 });
 const promise_1 = require("mysql2/promise");
 // create the connection to database
+const { DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS } = process.env;
 connection = (0, promise_1.createPool)({
-    host: "10.1.3.10",
-    port: 3306,
-    user: "root",
-    password: "Tasc@1235",
-    database: "ansv_management_test",
+    host: DB_HOST,
+    port: +DB_PORT || 3306,
+    user: DB_USER,
+    password: DB_PASS,
+    database: DB_NAME,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,

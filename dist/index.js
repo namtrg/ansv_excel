@@ -14,6 +14,8 @@ const fs = require("fs");
 const schedule = require("node-schedule");
 const deleteFile = require("util").promisify(fs.unlink);
 const app_1 = require("./app");
+const dotenv_1 = require("dotenv");
+(0, dotenv_1.config)();
 schedule.scheduleJob("0 */1 * * *", () => __awaiter(void 0, void 0, void 0, function* () {
     const exportFolder = path.join(__dirname, "export");
     const files = fs.readdirSync(exportFolder);
