@@ -4,7 +4,7 @@ module.exports = {
       name: "Excel handler",
       exec_mode: "cluster",
       instances: "1",
-      script: "./src/index.js", // your script
+      script: "./dist/index.js", // your script
       args: "start",
       env: {
         NODE_ENV: "production",
