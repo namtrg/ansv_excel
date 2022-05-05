@@ -2,13 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const schedule = require("node-schedule");
 const deleteFile = require("util").promisify(fs.unlink);
-const app = require('./app');
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, function () {
-  console.log("Server running in port " + PORT);
-});
+import app from "./app";
 
 schedule.scheduleJob("0 */1 * * *", async () => {
   const exportFolder = path.join(__dirname, "export");
@@ -25,3 +19,5 @@ schedule.scheduleJob("0 */1 * * *", async () => {
     }
   }
 });
+
+app();

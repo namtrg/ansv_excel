@@ -1,10 +1,11 @@
-var multer = require("multer");
-
+import * as multer from "multer";
+const path = require("path");
+import { randomUUID } from "crypto";
 
 var storage = multer.diskStorage({
   //multers disk storage settings
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "./upload"));
+    cb(null, path.join(__dirname, "../upload"));
   },
   filename: function (req, file, cb) {
     var datetimestamp = Date.now() + "_" + randomUUID();
@@ -20,12 +21,12 @@ var upload = multer({
   limits: {
     fileSize: 30 * 1024 * 5,
   },
-  dest: path.join(__dirname, "./upload"),
+  dest: path.join(__dirname, "../upload"),
   fileFilter: function (req, file, callback) {
     //file filter
     const fileExtension = path.extname(file.originalname);
-    // console.log(fileExtension);
-    if ([".xls", ".xlsx"].indexOf(fileExtension) === -1) {
+    // console.log([".xls", ".xlsx"].includes(fileExtension));
+    if (![".xls", ".xlsx"].includes(fileExtension)) {
       return callback(new Error("Định danh file không hợp lệ"));
     }
     callback(null, true);

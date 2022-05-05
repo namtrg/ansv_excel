@@ -4,62 +4,61 @@ const xlsxTemplate = require("xlsx-template");
 const { randomUUID } = require("crypto");
 const fs = require("fs").promises;
 
-const filePath = path.join(__dirname, "./kinh_doanh.xlsx");
-
 const kinhDoanhHeaders = [
   ["stt", "STT"],
-  ["duan", "Dự án"],
-  ["khachhang", "Khách hàng"],
-  ["motaduan", "Mô tả dự án"],
-  ["hinhthucdautu", "Hình thức đầu tư"],
-  ["tongmucdautu", "Tổng mức đầu tư"],
-  ["mucdokhathi", "Mức độ khả thi"],
-  ["phantichswot", "Phân tích SWOT"],
-  ["khokhan", "Khó khăn"],
-  ["giaiphap", "Giải pháp"],
+  ["name", "Dự án"],
+  ["customer", "Khách hàng"],
+  ["description", "Mô tả dự án"],
+  ["hinh_thuc_dau_tu", "Hình thức đầu tư"],
+  ["tong_muc_dau_tu_du_kien", "Tổng mức đầu tư"],
+  ["muc_do_kha_thi", "Mức độ khả thi"],
+  ["phan_tich_SWOT", "Phân tích SWOT"],
+  ["general_issue", "Khó khăn"],
+  ["solution", "Giải pháp"],
   ["priority", "Priority"],
   ["status", "Status"],
-  ["pic", "PIC"],
-  ["phoban", "Phó ban"],
-  ["ketquathuchientuantruoc", "Kết quả thực hiện tuần trước"],
-  ["ketquathuchientuannay", "Kết quả thực hiện tuần này"],
-  ["kehoachtuannay", "Kế hoạch tuần này"],
-  ["kehoachtuansau", "Kế hoạch tuần sau"],
+  ["pic_name", "PIC"],
+  ["manager_name", "Phó ban"],
+  ["ket_qua_thuc_hien_ke_hoach", "Kết quả thực hiện tuần trước"],
+  ["ket_qua_thuc_hien_tuan_nay", "Kết quả thực hiện tuần này"],
+  ["ke_hoach", "Kế hoạch tuần này"],
+  ["ke_hoach_tuan_sau", "Kế hoạch tuần sau"],
 ];
 
 const trienKhaiHeaders = [
   ["stt", "STT"],
-  ["duan", "Dự án"],
-  ["sohopdong", "Số hợp đồng"],
-  ["masoketoan", "Mã số kế toán"],
-  ["khachhang", "Khách hàng"],
-  ["giatri", "Giá trị"],
-  ["sotiendac", "Số tiền DAC"],
-  ["dachopdong", "DAC hợp đồng"],
-  ["muctieudac", "Mục tiêu DAC"],
-  ["dacthucte", "DAC thực tế"],
-  ["songayconlaidac", "Số ngày còn lại DAC"],
-  ["sotienpac", "Số tiền PAC"],
-  ["pachopdong", "PAC hợp đồng"],
-  ["muctieupac", "Mục tiêu PAC"],
-  ["pacthucte", "PAC thực tế"],
-  ["songayconlaipac", "Số ngày còn lại PAC"],
-  ["sotienfac", "Số tiền FAC"],
-  ["fachopdong", "FAC hợp đồng"],
-  ["muctieufac", "Mục tiêu FAC"],
-  ["facthucte", "FAC thực tế"],
-  ["songayconlaifac", "Số ngày còn lại FAC"],
-  ["tiendochung", "Tiến độ chung"],
-  ["khokhan", "Khó khăn"],
-  ["giaiphap", "Giải pháp"],
+  ["name", "Dự án"],
+  ["projects_id", "Số hợp đồng"],
+  ["ma_so_ke_toan", "Mã số kế toán"],
+  ["customer", "Khách hàng"],
+  ["tong_gia_tri_thuc_te", "Giá trị"],
+  ["so_tien_DAC", "Số tiền DAC"],
+  ["DAC", "DAC hợp đồng"],
+  ["ke_hoach_thanh_toan_DAC", "Mục tiêu DAC"],
+  ["thuc_te_thanh_toan_DAC", "DAC thực tế"],
+  ["so_ngay_con_lai_DAC", "Số ngày còn lại DAC"],
+  ["so_tien_PAC", "Số tiền PAC"],
+  ["PAC", "PAC hợp đồng"],
+  ["ke_hoach_thanh_toan_PAC", "Mục tiêu PAC"],
+  ["thuc_te_thanh_toan_PAC", "PAC thực tế"],
+  ["so_ngay_con_lai_PAC", "Số ngày còn lại PAC"],
+  ["so_tien_FAC", "Số tiền FAC"],
+  ["FAC", "FAC hợp đồng"],
+  ["ke_hoach_thanh_toan_FAC", "Mục tiêu FAC"],
+  ["thuc_te_thanh_toan_FAC", "FAC thực tế"],
+  ["so_ngay_con_lai_FAC", "Số ngày còn lại FAC"],
+  ["pham_vi_cung_cap", "Tiến độ chung"],
+  ["general_issue", "Khó khăn"],
+  ["solution", "Giải pháp"],
   ["priority", "Priority"],
   ["status", "Status"],
-  ["pic", "PIC"],
-  ["phoban", "Phó ban"],
-  ["ketquathuchientuantruoc", "Kết quả thực hiện tuần trước"],
-  ["ketquathuchientuannay", "Kết quả thực hiện tuần này"],
-  ["kehoachtuannay", "Kế hoạch tuần này"],
-  ["kehoachtuansau", "Kế hoạch tuần sau"],
+  ["am", "AM"],
+  ["pm", "PM"],
+  ["manager_name", "Phó ban"],
+  ["ket_qua_thuc_hien_ke_hoach", "Kết quả thực hiện tuần trước"],
+  ["ket_qua_thuc_hien_tuan_nay", "Kết quả thực hiện tuần này"],
+  ["ke_hoach", "Kế hoạch tuần này"],
+  ["ke_hoach_tuan_sau", "Kế hoạch tuần sau"],
 ];
 
 const kinhDoanhHeadersPosition = {};
@@ -96,11 +95,11 @@ const exportFile = async (data, type) => {
   //   (type == 1 ? kinhDoanhHeaders : trienKhaiHeaders).map((it) => it[0]);
   const exportData = data;
 
-  const templateFile = `${type == 1 ? "kinh_doanh" : "trien_khai"}.xlsx`;
+  const templateFile = `${type == 1 ? "trien_khai" : "kinh_doanh"}.xlsx`;
   const templateFiePath = path.join(__dirname, "../", "template", templateFile);
 
   const exportFileName = `${
-    type == 1 ? "kinh_doanh" : "trien_khai"
+    type == 1 ? "Trien khai " : type == 2 ? "Vien thong " : "Chuyen doi so "
   }_export_${new Date().getTime()}-${randomUUID()}.xlsx`;
   const exportFilePath = path.join(__dirname, "../", "export", exportFileName);
   const exportFolder = path.join(__dirname, "../", "export");

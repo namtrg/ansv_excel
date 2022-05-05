@@ -1,13 +1,17 @@
-const multer = require('../helpers/multer');
-const excel = require("./helpers/excel");
+const multer = require("../helpers/multer");
+const excel = require("../helpers/excel");
+const fs = require("fs");
+import { Response } from "express";
 
-module.exports = function importController(req, res) {
+const deleteFile = require("util").promisify(fs.unlink);
+
+export default function importController(req, res: Response) {
   multer(req, res, function (error) {
     if (error) {
       res.status(400).json({
         error_code: 4,
         err_desc: "Định dạng tệp phải là xls hoặc xlsx",
-        error_detail: error,
+        // error_detail: error,
       });
       return;
     }
@@ -17,7 +21,7 @@ module.exports = function importController(req, res) {
       res.status(400).json({
         error_code: 1,
         err_desc: "Không có file được tải lên",
-        error_detail: "",
+        // error_detail: "",
       });
       return;
     }
@@ -49,7 +53,7 @@ module.exports = function importController(req, res) {
         error_code: 3,
         err_desc:
           'Tên file không hợp lệ. Tên phải chứa "kinh_doanh" hoặc "trien_khai"',
-        error_detail: "Invaild name",
+        // error_detail: "Invaild name",
       });
       return;
     }
@@ -71,7 +75,7 @@ module.exports = function importController(req, res) {
       res.status(400).json({
         error_code: 2,
         err_desc: "File lỗi. Không thể đọc file",
-        error_detail: error,
+        // error_detail: error,
       });
     }
     deleteFile(req.file.path)
