@@ -20,4 +20,9 @@ schedule.scheduleJob("0 */1 * * *", async () => {
   }
 });
 
-app();
+const PORT = process.env.PORT || 3001;
+// import { AppDataSource } from "./data-source";
+
+app.listen(PORT, function () {
+  console.log("Server running in port " + PORT);
+});
