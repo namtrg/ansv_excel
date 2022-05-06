@@ -13,6 +13,9 @@ function convertDateToString(date: Date): string {
   const year = date.getFullYear();
   return `${day}/${month}/${year}`;
 }
+const isNumeric = (num: any) =>
+  (typeof num === "number" || (typeof num === "string" && num.trim() !== "")) &&
+  !isNaN(num as number);
 
 export default async (req: Request, res: Response) => {
   // const data = req.body.data;
@@ -22,6 +25,14 @@ export default async (req: Request, res: Response) => {
   let connection: PoolConnection;
   try {
     const { type, week } = req.body;
+    if (!isNumeric(type) || !isNumeric(week)) {
+      res.status(400).json({
+        error_code: 1,
+        err_desc: "Invalid input: type hoặc week không hợp lệ",
+        error_detail: "",
+      });
+      return;
+    }
     if (![1, 2, 3].includes(+type)) {
       res.status(400).json({
         error_code: 6,
@@ -62,11 +73,11 @@ export default async (req: Request, res: Response) => {
           );
 
           const AM = (rows2 as [any]).find(
-            (row2) => (row2 as any).role_name === "ROLE_AM"
-          ).display_name;
+            (row2) => row2.role_name === "ROLE_AM"
+          )?.display_name;
           const PM = (rows2 as [any]).find(
-            (row2) => (row2 as any).role_name === "ROLE_PM"
-          ).display_name;
+            (row2) => row2.role_name === "ROLE_PM"
+          )?.display_name;
           row.AM = AM ?? "";
           row.PM = PM ?? "";
           data.push(row);
@@ -106,9 +117,6 @@ export default async (req: Request, res: Response) => {
     //   return;
     // }
 
-    // const re
-
-    // console.log(data);
     connection.release();
 
     if (!data?.[0]) {

@@ -20,6 +20,8 @@ function convertDateToString(date) {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
 }
+const isNumeric = (num) => (typeof num === "number" || (typeof num === "string" && num.trim() !== "")) &&
+    !isNaN(num);
 exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a;
     // const data = req.body.data;
@@ -29,6 +31,14 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     let connection;
     try {
         const { type, week } = req.body;
+        if (!isNumeric(type) || !isNumeric(week)) {
+            res.status(400).json({
+                error_code: 1,
+                err_desc: "Invalid input: type hoặc week không hợp lệ",
+                error_detail: "",
+            });
+            return;
+        }
         if (![1, 2, 3].includes(+type)) {
             res.status(400).json({
                 error_code: 6,
@@ -57,9 +67,10 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 }
             }
             yield Promise.allSettled(result.map((row) => __awaiter(void 0, void 0, void 0, function* () {
+                var _b, _c;
                 const [rows2] = yield connection.execute("SELECT users.display_name as display_name, role.name as role_name FROM users INNER JOIN users_roles ON users.id = users_roles.user INNER JOIN role ON users_roles.role = role.id INNER JOIN pic ON users.id = pic.pic INNER JOIN project ON pic.project_id = project.id WHERE project.id = ?", [row.id]);
-                const AM = rows2.find((row2) => row2.role_name === "ROLE_AM").display_name;
-                const PM = rows2.find((row2) => row2.role_name === "ROLE_PM").display_name;
+                const AM = (_b = rows2.find((row2) => row2.role_name === "ROLE_AM")) === null || _b === void 0 ? void 0 : _b.display_name;
+                const PM = (_c = rows2.find((row2) => row2.role_name === "ROLE_PM")) === null || _c === void 0 ? void 0 : _c.display_name;
                 row.AM = AM !== null && AM !== void 0 ? AM : "";
                 row.PM = PM !== null && PM !== void 0 ? PM : "";
                 data.push(row);
@@ -91,8 +102,6 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         //   });
         //   return;
         // }
-        // const re
-        // console.log(data);
         connection.release();
         if (!(data === null || data === void 0 ? void 0 : data[0])) {
             res.status(200).json({
