@@ -5,7 +5,10 @@ const deleteFile = require("util").promisify(fs.unlink);
 import app from "./app";
 import { config } from "dotenv";
 
-config();
+config({
+  path: path.resolve(__dirname, "../.env"),
+});
+
 
 schedule.scheduleJob("0 */1 * * *", async () => {
   const exportFolder = path.join(__dirname, "export");
@@ -23,9 +26,12 @@ schedule.scheduleJob("0 */1 * * *", async () => {
   }
 });
 
-const PORT = process.env.PORT || 3001;
-// import { AppDataSource } from "./data-source";
+import { checkConnection } from "./db";
+checkConnection(() => {
+  const PORT = process.env.PORT || 3001;
+  // import { AppDataSource } from "./data-source";
 
-app.listen(PORT, function () {
-  console.log("Server running in port " + PORT);
+  app.listen(PORT, function () {
+    console.log("Server running in port " + PORT);
+  });
 });

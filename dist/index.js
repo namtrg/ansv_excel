@@ -15,7 +15,9 @@ const schedule = require("node-schedule");
 const deleteFile = require("util").promisify(fs.unlink);
 const app_1 = require("./app");
 const dotenv_1 = require("dotenv");
-(0, dotenv_1.config)();
+(0, dotenv_1.config)({
+    path: path.resolve(__dirname, "../.env"),
+});
 schedule.scheduleJob("0 */1 * * *", () => __awaiter(void 0, void 0, void 0, function* () {
     const exportFolder = path.join(__dirname, "export");
     const files = fs.readdirSync(exportFolder);
@@ -31,8 +33,11 @@ schedule.scheduleJob("0 */1 * * *", () => __awaiter(void 0, void 0, void 0, func
         }
     }
 }));
-const PORT = process.env.PORT || 3001;
-// import { AppDataSource } from "./data-source";
-app_1.default.listen(PORT, function () {
-    console.log("Server running in port " + PORT);
+const db_1 = require("./db");
+(0, db_1.checkConnection)(() => {
+    const PORT = process.env.PORT || 3001;
+    // import { AppDataSource } from "./data-source";
+    app_1.default.listen(PORT, function () {
+        console.log("Server running in port " + PORT);
+    });
 });

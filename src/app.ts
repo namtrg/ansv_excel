@@ -11,8 +11,6 @@ import importController from "./controller/import";
 const app = express();
 app.use(bodyParser.json());
 
-let connection: any;
-
 app.set("etag", false);
 
 app.use(function (req, res, next) {
@@ -33,7 +31,7 @@ app.use(
 app.post("/upload", nocache(), importController);
 
 app.post("/export", nocache(), (req, res) => {
-  exportController(req, res, connection);
+  exportController(req, res);
 });
 
 app.get("/download", nocache(), (req, res) => {
@@ -50,41 +48,5 @@ app.get("/download", nocache(), (req, res) => {
   }
   res.download(filePath);
 });
-
-import { createPool } from "mysql2/promise";
-
-// create the connection to database
-
-const { DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS } = process.env;
-
-console.log({ DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS });
-
-
-connection = createPool({
-  host: DB_HOST,
-  port: +DB_PORT || 3306,
-  user: DB_USER,
-  password: DB_PASS,
-  database: DB_NAME,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-  // rowsAsArray: true,
-});
-
-if (!connection) {
-  console.log("Connection failed. Restart after 5s");
-  setTimeout(function () {
-    console.log("Restarting...");
-    process.on("exit", function () {
-      require("child_process").spawn(process.argv.shift(), process.argv, {
-        cwd: process.cwd(),
-        detached: true,
-        stdio: "inherit",
-      });
-    });
-    process.exit();
-  }, 5000);
-}
 
 export default app;

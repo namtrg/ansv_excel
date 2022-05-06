@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const excel = require("../helpers/excel");
+const db_1 = require("../db");
 function addZero(number) {
     return number < 10 ? "0" + number : number.toString();
 }
@@ -19,11 +20,13 @@ function convertDateToString(date) {
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
 }
-exports.default = (req, res, connection) => __awaiter(void 0, void 0, void 0, function* () {
+exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _a;
     // const data = req.body.data;
     // 1: triển khai
     // 2 Viên thông
     // 3 chuyển đổi số
+    let connection;
     try {
         const { type, week } = req.body;
         if (![1, 2, 3].includes(+type)) {
@@ -34,6 +37,7 @@ exports.default = (req, res, connection) => __awaiter(void 0, void 0, void 0, fu
             });
             return;
         }
+        connection = yield db_1.pool.getConnection();
         let data = [];
         if (+type === 1) {
             const [rows, fields] = yield connection.execute("SELECT project.id, projects_types.name AS type, priorities.name AS priority, projects_status.name AS status, customers.name AS customer, project.week, project.year, project.projects_id, project.ma_so_ke_toan, project.name, project.pham_vi_cung_cap, project.tong_gia_tri_thuc_te, project.DAC, project.FAC, project.PAC, project.so_tien_tam_ung, project.ke_hoach_tam_ung, project.so_tien_DAC, project.ke_hoach_thanh_toan_DAC, project.thuc_te_thanh_toan_DAC, project.so_tien_PAC, project.ke_hoach_thanh_toan_PAC, project.thuc_te_thanh_toan_PAC, project.so_tien_FAC, project.ke_hoach_thanh_toan_FAC, project.thuc_te_thanh_toan_FAC, project.ke_hoach, project.general_issue, project.solution, project.ket_qua_thuc_hien_ke_hoach FROM project INNER JOIN projects_types ON project.project_type = projects_types.id INNER JOIN priorities ON project.priority = priorities.id INNER JOIN projects_status ON project.project_status = projects_status.id INNER JOIN customers ON project.customer = customers.id WHERE project.week = ? AND project.project_type = ?", [week, type]);
@@ -89,6 +93,7 @@ exports.default = (req, res, connection) => __awaiter(void 0, void 0, void 0, fu
         // }
         // const re
         // console.log(data);
+        connection.release();
         if (!(data === null || data === void 0 ? void 0 : data[0])) {
             res.status(200).json({
                 error_code: 6,
@@ -129,5 +134,6 @@ exports.default = (req, res, connection) => __awaiter(void 0, void 0, void 0, fu
             err_desc: error.message,
             error_detail: error.stack,
         });
+        (_a = connection === null || connection === void 0 ? void 0 : connection.release) === null || _a === void 0 ? void 0 : _a.call(connection);
     }
 });

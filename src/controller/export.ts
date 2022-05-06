@@ -1,6 +1,7 @@
 const excel = require("../helpers/excel");
 import { Request, Response } from "express";
-import { Pool } from "mysql2/promise";
+import { PoolConnection } from "mysql2/promise";
+import { pool } from "../db";
 
 function addZero(number: number): string {
   return number < 10 ? "0" + number : number.toString();
@@ -13,14 +14,14 @@ function convertDateToString(date: Date): string {
   return `${day}/${month}/${year}`;
 }
 
-export default async (req: Request, res: Response, connection: Pool) => {
+export default async (req: Request, res: Response) => {
   // const data = req.body.data;
   // 1: triển khai
   // 2 Viên thông
   // 3 chuyển đổi số
+  let connection: PoolConnection;
   try {
     const { type, week } = req.body;
-
     if (![1, 2, 3].includes(+type)) {
       res.status(400).json({
         error_code: 6,
@@ -29,6 +30,7 @@ export default async (req: Request, res: Response, connection: Pool) => {
       });
       return;
     }
+    connection = await pool.getConnection();
     let data = [];
     if (+type === 1) {
       const [rows, fields] = await connection.execute(
@@ -107,6 +109,7 @@ export default async (req: Request, res: Response, connection: Pool) => {
     // const re
 
     // console.log(data);
+    connection.release();
 
     if (!data?.[0]) {
       res.status(200).json({
@@ -153,5 +156,6 @@ export default async (req: Request, res: Response, connection: Pool) => {
       err_desc: error.message,
       error_detail: error.stack,
     });
+    connection?.release?.();
   }
 };
