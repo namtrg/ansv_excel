@@ -15,6 +15,7 @@ const schedule = require("node-schedule");
 const deleteFile = require("util").promisify(fs.unlink);
 const app_1 = require("./app");
 const dotenv_1 = require("dotenv");
+console.log("Env file:", path.resolve(__dirname, "../.env"));
 (0, dotenv_1.config)({
     path: path.resolve(__dirname, "../.env"),
 });

@@ -2,6 +2,8 @@ import { createPool, Pool } from "mysql2/promise";
 import * as path from "path";
 import { config } from "dotenv";
 
+console.log("Env file:", path.resolve(__dirname, "../.env"));
+
 config({
   path: path.resolve(__dirname, "../../.env"),
 });
