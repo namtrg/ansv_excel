@@ -33,13 +33,6 @@ const checkConnection = (callback: Function) => {
       console.log("Connection to database failed. Restart after 5s");
       setTimeout(function () {
         console.log("Restarting...");
-        process.on("exit", function () {
-          require("child_process").spawn(process.argv.shift(), process.argv, {
-            cwd: process.cwd(),
-            detached: true,
-            stdio: "inherit",
-          });
-        });
         process.exit();
       }, 5000);
     });

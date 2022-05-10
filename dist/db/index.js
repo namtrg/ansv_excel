@@ -4,6 +4,7 @@ exports.checkConnection = exports.pool = void 0;
 const promise_1 = require("mysql2/promise");
 const path = require("path");
 const dotenv_1 = require("dotenv");
+console.log("Env file:", path.resolve(__dirname, "../.env"));
 (0, dotenv_1.config)({
     path: path.resolve(__dirname, "../../.env"),
 });
@@ -32,13 +33,6 @@ const checkConnection = (callback) => {
         console.log("Connection to database failed. Restart after 5s");
         setTimeout(function () {
             console.log("Restarting...");
-            process.on("exit", function () {
-                require("child_process").spawn(process.argv.shift(), process.argv, {
-                    cwd: process.cwd(),
-                    detached: true,
-                    stdio: "inherit",
-                });
-            });
             process.exit();
         }, 5000);
     });
