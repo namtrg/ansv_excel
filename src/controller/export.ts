@@ -64,6 +64,22 @@ export default async (req: Request, res: Response) => {
           const date = new Date(row.ke_hoach_thanh_toan_FAC);
           row.ke_hoach_thanh_toan_FAC = convertDateToString(date);
         }
+        if (row.FAC) {
+          const date = new Date(row.DAC);
+          row.DAC = convertDateToString(date);
+        }
+        if (row.ke_hoach_thanh_toan_DAC) {
+          const date = new Date(row.ke_hoach_thanh_toan_DAC);
+          row.ke_hoach_thanh_toan_DAC = convertDateToString(date);
+        }
+        if (row.PAC) {
+          const date = new Date(row.PAC);
+          row.PAC = convertDateToString(date);
+        }
+        if (row.ke_hoach_thanh_toan_PAC) {
+          const date = new Date(row.ke_hoach_thanh_toan_PAC);
+          row.ke_hoach_thanh_toan_PAC = convertDateToString(date);
+        }
       }
       await Promise.allSettled(
         result.map(async (row) => {
