@@ -56,27 +56,27 @@ export default async (req: Request, res: Response) => {
         row.so_tien_DAC ||= "";
         row.so_tien_FAC ||= "";
         row.so_tien_PAC ||= "";
-        if (row.FAC) {
+        if (row.FAC?.getTime) {
           const date = new Date(row.FAC);
           row.FAC = convertDateToString(date);
         }
-        if (row.ke_hoach_thanh_toan_FAC) {
+        if (row.ke_hoach_thanh_toan_FAC?.getTime) {
           const date = new Date(row.ke_hoach_thanh_toan_FAC);
           row.ke_hoach_thanh_toan_FAC = convertDateToString(date);
         }
-        if (row.FAC) {
+        if (row.FAC?.getTime) {
           const date = new Date(row.DAC);
           row.DAC = convertDateToString(date);
         }
-        if (row.ke_hoach_thanh_toan_DAC) {
+        if (row.ke_hoach_thanh_toan_DAC?.getTime) {
           const date = new Date(row.ke_hoach_thanh_toan_DAC);
           row.ke_hoach_thanh_toan_DAC = convertDateToString(date);
         }
-        if (row.PAC) {
+        if (row.PAC?.getTime) {
           const date = new Date(row.PAC);
           row.PAC = convertDateToString(date);
         }
-        if (row.ke_hoach_thanh_toan_PAC) {
+        if (row.ke_hoach_thanh_toan_PAC?.getTime) {
           const date = new Date(row.ke_hoach_thanh_toan_PAC);
           row.ke_hoach_thanh_toan_PAC = convertDateToString(date);
         }

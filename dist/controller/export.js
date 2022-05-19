@@ -23,7 +23,7 @@ function convertDateToString(date) {
 const isNumeric = (num) => (typeof num === "number" || (typeof num === "string" && num.trim() !== "")) &&
     !isNaN(num);
 exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b, _c, _d, _e, _f, _g;
     // const data = req.body.data;
     // 1: triển khai
     // 2 Viên thông
@@ -57,20 +57,36 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 row.so_tien_DAC || (row.so_tien_DAC = "");
                 row.so_tien_FAC || (row.so_tien_FAC = "");
                 row.so_tien_PAC || (row.so_tien_PAC = "");
-                if (row.FAC) {
+                if ((_a = row.FAC) === null || _a === void 0 ? void 0 : _a.getTime) {
                     const date = new Date(row.FAC);
                     row.FAC = convertDateToString(date);
                 }
-                if (row.ke_hoach_thanh_toan_FAC) {
+                if ((_b = row.ke_hoach_thanh_toan_FAC) === null || _b === void 0 ? void 0 : _b.getTime) {
                     const date = new Date(row.ke_hoach_thanh_toan_FAC);
                     row.ke_hoach_thanh_toan_FAC = convertDateToString(date);
                 }
+                if ((_c = row.FAC) === null || _c === void 0 ? void 0 : _c.getTime) {
+                    const date = new Date(row.DAC);
+                    row.DAC = convertDateToString(date);
+                }
+                if ((_d = row.ke_hoach_thanh_toan_DAC) === null || _d === void 0 ? void 0 : _d.getTime) {
+                    const date = new Date(row.ke_hoach_thanh_toan_DAC);
+                    row.ke_hoach_thanh_toan_DAC = convertDateToString(date);
+                }
+                if ((_e = row.PAC) === null || _e === void 0 ? void 0 : _e.getTime) {
+                    const date = new Date(row.PAC);
+                    row.PAC = convertDateToString(date);
+                }
+                if ((_f = row.ke_hoach_thanh_toan_PAC) === null || _f === void 0 ? void 0 : _f.getTime) {
+                    const date = new Date(row.ke_hoach_thanh_toan_PAC);
+                    row.ke_hoach_thanh_toan_PAC = convertDateToString(date);
+                }
             }
             yield Promise.allSettled(result.map((row) => __awaiter(void 0, void 0, void 0, function* () {
-                var _b, _c;
+                var _h, _j;
                 const [rows2] = yield connection.execute("SELECT users.display_name as display_name, role.name as role_name FROM users INNER JOIN users_roles ON users.id = users_roles.user INNER JOIN role ON users_roles.role = role.id INNER JOIN pic ON users.id = pic.pic INNER JOIN project ON pic.project_id = project.id WHERE project.id = ?", [row.id]);
-                const AM = (_b = rows2.find((row2) => row2.role_name === "ROLE_AM")) === null || _b === void 0 ? void 0 : _b.display_name;
-                const PM = (_c = rows2.find((row2) => row2.role_name === "ROLE_PM")) === null || _c === void 0 ? void 0 : _c.display_name;
+                const AM = (_h = rows2.find((row2) => row2.role_name === "ROLE_AM")) === null || _h === void 0 ? void 0 : _h.display_name;
+                const PM = (_j = rows2.find((row2) => row2.role_name === "ROLE_PM")) === null || _j === void 0 ? void 0 : _j.display_name;
                 row.AM = AM !== null && AM !== void 0 ? AM : "";
                 row.PM = PM !== null && PM !== void 0 ? PM : "";
                 data.push(row);
@@ -143,6 +159,6 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             err_desc: error.message,
             error_detail: error.stack,
         });
-        (_a = connection === null || connection === void 0 ? void 0 : connection.release) === null || _a === void 0 ? void 0 : _a.call(connection);
+        (_g = connection === null || connection === void 0 ? void 0 : connection.release) === null || _g === void 0 ? void 0 : _g.call(connection);
     }
 });
