@@ -51,6 +51,9 @@ export default async (req: Request, res: Response) => {
 
       const result = JSON.parse(JSON.stringify(rows));
 
+      console.log(result);
+      
+
       for (const row of result) {
         row.tong_gia_tri_thuc_te ||= "";
         row.so_tien_DAC ||= "";
