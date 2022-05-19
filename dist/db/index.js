@@ -4,9 +4,9 @@ exports.checkConnection = exports.pool = void 0;
 const promise_1 = require("mysql2/promise");
 const path = require("path");
 const dotenv_1 = require("dotenv");
-console.log("Env file:", path.resolve(__dirname, "../.env"));
+console.log("Env file:", path.resolve(__dirname, "../../.env"));
 (0, dotenv_1.config)({
-    path: path.resolve(__dirname, "../.env"),
+    path: path.resolve(__dirname, "../../.env"),
 });
 const { DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS } = process.env;
 console.log({ DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS });

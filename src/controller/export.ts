@@ -43,13 +43,52 @@ export default async (req: Request, res: Response) => {
     }
     connection = await pool.getConnection();
     let data = [];
-    console.log("type:", type);
     
     if (+type === 1) {
       const [rows, fields] = await connection.execute(
         "SELECT project.id, projects_types.name AS type, priorities.name AS priority, projects_status.name AS status, customers.name AS customer, project.week, project.year, project.projects_id, project.ma_so_ke_toan, project.name, project.pham_vi_cung_cap, project.tong_gia_tri_thuc_te, project.DAC, project.FAC, project.PAC, project.so_tien_tam_ung, project.ke_hoach_tam_ung, project.so_tien_DAC, project.ke_hoach_thanh_toan_DAC, project.thuc_te_thanh_toan_DAC, project.so_tien_PAC, project.ke_hoach_thanh_toan_PAC, project.thuc_te_thanh_toan_PAC, project.so_tien_FAC, project.ke_hoach_thanh_toan_FAC, project.thuc_te_thanh_toan_FAC, project.ke_hoach, project.general_issue, project.solution, project.ket_qua_thuc_hien_ke_hoach FROM project INNER JOIN projects_types ON project.project_type = projects_types.id INNER JOIN priorities ON project.priority = priorities.id INNER JOIN projects_status ON project.project_status = projects_status.id INNER JOIN customers ON project.customer = customers.id WHERE project.week = ? AND project.project_type = ?",
         [week, type]
       );
+
+      for (let i = 0; i < (rows as any)?.length || 0; i++) {
+        const row = (rows as any)?.[i];
+        if (row.FAC?.getTime) {
+          const date = new Date(row.FAC);
+          row.FAC = convertDateToString(date);
+        }
+        if (row.ke_hoach_thanh_toan_FAC?.getTime) {
+          const date = new Date(row.ke_hoach_thanh_toan_FAC);
+          row.ke_hoach_thanh_toan_FAC = convertDateToString(date);
+        }
+        if (row.thuc_te_thanh_toan_FAC?.getTime) {
+          const date = new Date(row.thuc_te_thanh_toan_FAC);
+          row.thuc_te_thanh_toan_FAC = convertDateToString(date);
+        }
+        if (row.DAC?.getTime) {
+          const date = new Date(row.DAC);
+          row.DAC = convertDateToString(date);
+        }
+        if (row.ke_hoach_thanh_toan_DAC?.getTime) {
+          const date = new Date(row.ke_hoach_thanh_toan_DAC);
+          row.ke_hoach_thanh_toan_DAC = convertDateToString(date);
+        }
+        if (row.thuc_te_thanh_toan_DAC?.getTime) {
+          const date = new Date(row.thuc_te_thanh_toan_DAC);
+          row.thuc_te_thanh_toan_DAC = convertDateToString(date);
+        }
+        if (row.PAC?.getTime) {
+          const date = new Date(row.PAC);
+          row.PAC = convertDateToString(date);
+        }
+        if (row.ke_hoach_thanh_toan_PAC?.getTime) {
+          const date = new Date(row.ke_hoach_thanh_toan_PAC);
+          row.ke_hoach_thanh_toan_PAC = convertDateToString(date);
+        }
+        if (row.thuc_te_thanh_toan_PAC?.getTime) {
+          const date = new Date(row.thuc_te_thanh_toan_PAC);
+          row.thuc_te_thanh_toan_PAC = convertDateToString(date);
+        }
+      }
 
       const result = JSON.parse(JSON.stringify(rows));
 
@@ -58,30 +97,6 @@ export default async (req: Request, res: Response) => {
         row.so_tien_DAC ||= "";
         row.so_tien_FAC ||= "";
         row.so_tien_PAC ||= "";
-        if (row.FAC) {
-          const date = new Date(row.FAC);
-          row.FAC = convertDateToString(date);
-        }
-        if (row.ke_hoach_thanh_toan_FAC) {
-          const date = new Date(row.ke_hoach_thanh_toan_FAC);
-          row.ke_hoach_thanh_toan_FAC = convertDateToString(date);
-        }
-        if (row.FAC) {
-          const date = new Date(row.DAC);
-          row.DAC = convertDateToString(date);
-        }
-        if (row.ke_hoach_thanh_toan_DAC) {
-          const date = new Date(row.ke_hoach_thanh_toan_DAC);
-          row.ke_hoach_thanh_toan_DAC = convertDateToString(date);
-        }
-        if (row.PAC) {
-          const date = new Date(row.PAC);
-          row.PAC = convertDateToString(date);
-        }
-        if (row.ke_hoach_thanh_toan_PAC) {
-          const date = new Date(row.ke_hoach_thanh_toan_PAC);
-          row.ke_hoach_thanh_toan_PAC = convertDateToString(date);
-        }
       }
       await Promise.allSettled(
         result.map(async (row) => {

@@ -2,10 +2,10 @@ import { createPool, Pool } from "mysql2/promise";
 import * as path from "path";
 import { config } from "dotenv";
 
-console.log("Env file:", path.resolve(__dirname, "../.env"));
+console.log("Env file:", path.resolve(__dirname, "../../.env"));
 
 config({
-  path: path.resolve(__dirname, "../.env"),
+  path: path.resolve(__dirname, "../../.env"),
 });
 const { DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS } = process.env;
 console.log({ DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS });

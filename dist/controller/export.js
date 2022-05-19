@@ -23,7 +23,7 @@ function convertDateToString(date) {
 const isNumeric = (num) => (typeof num === "number" || (typeof num === "string" && num.trim() !== "")) &&
     !isNaN(num);
 exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
     // const data = req.body.data;
     // 1: triển khai
     // 2 Viên thông
@@ -49,45 +49,59 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         connection = yield db_1.pool.getConnection();
         let data = [];
-        console.log("type:", type);
         if (+type === 1) {
             const [rows, fields] = yield connection.execute("SELECT project.id, projects_types.name AS type, priorities.name AS priority, projects_status.name AS status, customers.name AS customer, project.week, project.year, project.projects_id, project.ma_so_ke_toan, project.name, project.pham_vi_cung_cap, project.tong_gia_tri_thuc_te, project.DAC, project.FAC, project.PAC, project.so_tien_tam_ung, project.ke_hoach_tam_ung, project.so_tien_DAC, project.ke_hoach_thanh_toan_DAC, project.thuc_te_thanh_toan_DAC, project.so_tien_PAC, project.ke_hoach_thanh_toan_PAC, project.thuc_te_thanh_toan_PAC, project.so_tien_FAC, project.ke_hoach_thanh_toan_FAC, project.thuc_te_thanh_toan_FAC, project.ke_hoach, project.general_issue, project.solution, project.ket_qua_thuc_hien_ke_hoach FROM project INNER JOIN projects_types ON project.project_type = projects_types.id INNER JOIN priorities ON project.priority = priorities.id INNER JOIN projects_status ON project.project_status = projects_status.id INNER JOIN customers ON project.customer = customers.id WHERE project.week = ? AND project.project_type = ?", [week, type]);
+            for (let i = 0; i < ((_a = rows) === null || _a === void 0 ? void 0 : _a.length) || 0; i++) {
+                const row = (_b = rows) === null || _b === void 0 ? void 0 : _b[i];
+                if ((_c = row.FAC) === null || _c === void 0 ? void 0 : _c.getTime) {
+                    const date = new Date(row.FAC);
+                    row.FAC = convertDateToString(date);
+                }
+                if ((_d = row.ke_hoach_thanh_toan_FAC) === null || _d === void 0 ? void 0 : _d.getTime) {
+                    const date = new Date(row.ke_hoach_thanh_toan_FAC);
+                    row.ke_hoach_thanh_toan_FAC = convertDateToString(date);
+                }
+                if ((_e = row.thuc_te_thanh_toan_FAC) === null || _e === void 0 ? void 0 : _e.getTime) {
+                    const date = new Date(row.thuc_te_thanh_toan_FAC);
+                    row.thuc_te_thanh_toan_FAC = convertDateToString(date);
+                }
+                if ((_f = row.DAC) === null || _f === void 0 ? void 0 : _f.getTime) {
+                    const date = new Date(row.DAC);
+                    row.DAC = convertDateToString(date);
+                }
+                if ((_g = row.ke_hoach_thanh_toan_DAC) === null || _g === void 0 ? void 0 : _g.getTime) {
+                    const date = new Date(row.ke_hoach_thanh_toan_DAC);
+                    row.ke_hoach_thanh_toan_DAC = convertDateToString(date);
+                }
+                if ((_h = row.thuc_te_thanh_toan_DAC) === null || _h === void 0 ? void 0 : _h.getTime) {
+                    const date = new Date(row.thuc_te_thanh_toan_DAC);
+                    row.thuc_te_thanh_toan_DAC = convertDateToString(date);
+                }
+                if ((_j = row.PAC) === null || _j === void 0 ? void 0 : _j.getTime) {
+                    const date = new Date(row.PAC);
+                    row.PAC = convertDateToString(date);
+                }
+                if ((_k = row.ke_hoach_thanh_toan_PAC) === null || _k === void 0 ? void 0 : _k.getTime) {
+                    const date = new Date(row.ke_hoach_thanh_toan_PAC);
+                    row.ke_hoach_thanh_toan_PAC = convertDateToString(date);
+                }
+                if ((_l = row.thuc_te_thanh_toan_PAC) === null || _l === void 0 ? void 0 : _l.getTime) {
+                    const date = new Date(row.thuc_te_thanh_toan_PAC);
+                    row.thuc_te_thanh_toan_PAC = convertDateToString(date);
+                }
+            }
             const result = JSON.parse(JSON.stringify(rows));
             for (const row of result) {
                 row.tong_gia_tri_thuc_te || (row.tong_gia_tri_thuc_te = "");
                 row.so_tien_DAC || (row.so_tien_DAC = "");
                 row.so_tien_FAC || (row.so_tien_FAC = "");
                 row.so_tien_PAC || (row.so_tien_PAC = "");
-                if (row.FAC) {
-                    const date = new Date(row.FAC);
-                    row.FAC = convertDateToString(date);
-                }
-                if (row.ke_hoach_thanh_toan_FAC) {
-                    const date = new Date(row.ke_hoach_thanh_toan_FAC);
-                    row.ke_hoach_thanh_toan_FAC = convertDateToString(date);
-                }
-                if (row.FAC) {
-                    const date = new Date(row.DAC);
-                    row.DAC = convertDateToString(date);
-                }
-                if (row.ke_hoach_thanh_toan_DAC) {
-                    const date = new Date(row.ke_hoach_thanh_toan_DAC);
-                    row.ke_hoach_thanh_toan_DAC = convertDateToString(date);
-                }
-                if (row.PAC) {
-                    const date = new Date(row.PAC);
-                    row.PAC = convertDateToString(date);
-                }
-                if (row.ke_hoach_thanh_toan_PAC) {
-                    const date = new Date(row.ke_hoach_thanh_toan_PAC);
-                    row.ke_hoach_thanh_toan_PAC = convertDateToString(date);
-                }
             }
             yield Promise.allSettled(result.map((row) => __awaiter(void 0, void 0, void 0, function* () {
-                var _b, _c;
+                var _o, _p;
                 const [rows2] = yield connection.execute("SELECT users.display_name as display_name, role.name as role_name FROM users INNER JOIN users_roles ON users.id = users_roles.user INNER JOIN role ON users_roles.role = role.id INNER JOIN pic ON users.id = pic.pic INNER JOIN project ON pic.project_id = project.id WHERE project.id = ?", [row.id]);
-                const AM = (_b = rows2.find((row2) => row2.role_name === "ROLE_AM")) === null || _b === void 0 ? void 0 : _b.display_name;
-                const PM = (_c = rows2.find((row2) => row2.role_name === "ROLE_PM")) === null || _c === void 0 ? void 0 : _c.display_name;
+                const AM = (_o = rows2.find((row2) => row2.role_name === "ROLE_AM")) === null || _o === void 0 ? void 0 : _o.display_name;
+                const PM = (_p = rows2.find((row2) => row2.role_name === "ROLE_PM")) === null || _p === void 0 ? void 0 : _p.display_name;
                 row.AM = AM !== null && AM !== void 0 ? AM : "";
                 row.PM = PM !== null && PM !== void 0 ? PM : "";
                 data.push(row);
@@ -160,6 +174,6 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             err_desc: error.message,
             error_detail: error.stack,
         });
-        (_a = connection === null || connection === void 0 ? void 0 : connection.release) === null || _a === void 0 ? void 0 : _a.call(connection);
+        (_m = connection === null || connection === void 0 ? void 0 : connection.release) === null || _m === void 0 ? void 0 : _m.call(connection);
     }
 });
