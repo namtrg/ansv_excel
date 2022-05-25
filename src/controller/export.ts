@@ -116,6 +116,8 @@ export default async (req: Request, res: Response) => {
           data.push(row);
         })
       );
+      // console.log(data);
+      
     } else if (+type === 2 || +type === 3) {
       const [rows] = await connection.execute(
         "SELECT project.id AS project_id, users.display_name AS pic_name, projects_types.name AS project_type, priorities.name AS priority, projects_status.name AS project_status, customers.name, project.week, project.year, project.name, project.description, project.tong_muc_dau_tu_du_kien, project.hinh_thuc_dau_tu, project.muc_do_kha_thi, project.phan_tich_SWOT, project.general_issue, project.ke_hoach, project.ket_qua_thuc_hien_ke_hoach FROM project INNER JOIN pic ON project.id = pic.project_id INNER JOIN users ON pic.pic = users.id INNER JOIN projects_types ON project.project_type = projects_types.id INNER JOIN priorities ON project.priority = priorities.id INNER JOIN projects_status ON project.project_status = projects_status.id INNER JOIN customers ON project.customer = customers.id WHERE project.week = ? AND project.project_type = ?",
@@ -140,6 +142,8 @@ export default async (req: Request, res: Response) => {
       // );
       data = result;
     }
+    // console.log(data);
+    
 
     // if (!data) {
     //   res.status(400).json({
