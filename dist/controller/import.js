@@ -14,7 +14,8 @@ const excel = require("../helpers/excel");
 const fs = require("fs");
 const moment = require("moment");
 const db_1 = require("../db");
-moment.locale('vi');
+// moment.locale('vi');
+// console.log(moment().week());
 const deleteFile = require("util").promisify(fs.unlink);
 function importController(req, res) {
     multer(req, res, function (error) {
@@ -23,6 +24,7 @@ function importController(req, res) {
             res.status(400).json({
                 error_code: 4,
                 err_desc: "Định dạng tệp phải là xls hoặc xlsx",
+                message: "Định dạng tệp phải là xls hoặc xlsx"
                 // error_detail: error,
             });
             return;
@@ -32,6 +34,7 @@ function importController(req, res) {
             res.status(400).json({
                 error_code: 1,
                 err_desc: "Không có file được tải lên",
+                message: "Không có file được tải lên",
                 // error_detail: "",
             });
             return;
@@ -71,6 +74,7 @@ function importController(req, res) {
             res.status(400).json({
                 error_code: 3,
                 err_desc: 'Tên file không hợp lệ. Tên phải chứa "kinh_doanh", "chuyen_doi_so" hoặc "vien_thong"',
+                message: 'Tên file không hợp lệ. Tên phải chứa "kinh_doanh", "chuyen_doi_so" hoặc "vien_thong"',
                 // error_detail: "Invaild name",
             });
             return;
@@ -95,6 +99,7 @@ function importController(req, res) {
                 res.status(400).json({
                     error_code: 8,
                     err_desc: error.message,
+                    message: error.message,
                 });
             });
         }
@@ -103,6 +108,7 @@ function importController(req, res) {
             res.status(400).json({
                 error_code: 2,
                 err_desc: "File lỗi. Không thể đọc file",
+                message: "File lỗi. Không thể đọc file",
                 // error_detail: error,
             });
         }
@@ -123,7 +129,7 @@ function updateRow(item, index, fileTypeCode) {
             // project
             const [rows] = (yield connection.query("SELECT * FROM `project` WHERE name=? and interactive=?", [name, "create"]));
             if ((rows === null || rows === void 0 ? void 0 : rows.length) > 1) {
-                throw new Error("Lỗi lặp dự án mới - " + index);
+                throw new Error("Lỗi lặp dự án mới - " + (index + 1));
             }
             else if ((rows === null || rows === void 0 ? void 0 : rows.length) == 1) {
                 p_id = (_a = rows[0]) === null || _a === void 0 ? void 0 : _a.id;
@@ -132,7 +138,7 @@ function updateRow(item, index, fileTypeCode) {
             // khachhang
             const [KH] = (yield connection.query("SELECT * FROM `customers` WHERE name=?", [customer]));
             if ((KH === null || KH === void 0 ? void 0 : KH.length) > 1) {
-                throw new Error("Lỗi lặp khách hàng - " + index);
+                throw new Error("Lỗi lặp khách hàng - " + (index + 1));
             }
             else if ((KH === null || KH === void 0 ? void 0 : KH.length) == 1) {
                 c_id = (_b = KH[0]) === null || _b === void 0 ? void 0 : _b.id;
@@ -145,27 +151,27 @@ function updateRow(item, index, fileTypeCode) {
             const [AM_] = (yield connection.query("SELECT users.id as aid FROM `users` inner join users_roles on users.id = users_roles.user inner join role on users_roles.role = role.id WHERE users.display_name=? and role.name='ROLE_AM'", [pic_name || am]));
             // console.log(customer, AM_);
             if ((AM_ === null || AM_ === void 0 ? void 0 : AM_.length) > 1) {
-                throw new Error("Lỗi lặp am - " + index);
+                throw new Error("Lỗi lặp am - " + (index + 1));
             }
             else if ((AM_ === null || AM_ === void 0 ? void 0 : AM_.length) == 1) {
                 am_id = (_c = AM_[0]) === null || _c === void 0 ? void 0 : _c.aid;
                 // Ok
             }
             else {
-                throw new Error("Không thấy AM  - " + index);
+                throw new Error("Không thấy AM  - " + (index + 1));
             }
             // pm
             if (fileTypeCode === 1) {
                 const [pm_] = (yield connection.query("SELECT users.id as pid FROM `users` inner join users_roles on users.id = users_roles.user inner join role on users_roles.role = role.id WHERE users.display_name=? and role.name='ROLE_PM'", [pm]));
                 if ((pm_ === null || pm_ === void 0 ? void 0 : pm_.length) > 1) {
-                    throw new Error("Lỗi lặp PM - " + index);
+                    throw new Error("Lỗi lặp PM - " + (index + 1));
                 }
                 else if ((pm_ === null || pm_ === void 0 ? void 0 : pm_.length) == 1) {
                     pm_id = (_d = pm_[0]) === null || _d === void 0 ? void 0 : _d.pid;
                     // Ok
                 }
                 else {
-                    throw new Error("Không thấy PM  - " + index);
+                    throw new Error("Không thấy PM  - " + (index + 1));
                 }
             }
             // priority

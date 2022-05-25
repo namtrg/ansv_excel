@@ -6,7 +6,9 @@ import moment = require("moment");
 import { PoolConnection } from "mysql2/promise";
 import { pool } from "../db";
 
-moment.locale('vi');
+
+// moment.locale('vi');
+// console.log(moment().week());
 
 const deleteFile = require("util").promisify(fs.unlink);
 
@@ -16,6 +18,7 @@ export default function importController(req, res: Response) {
       res.status(400).json({
         error_code: 4,
         err_desc: "Định dạng tệp phải là xls hoặc xlsx",
+        message: "Định dạng tệp phải là xls hoặc xlsx"
         // error_detail: error,
       });
       return;
@@ -26,6 +29,7 @@ export default function importController(req, res: Response) {
       res.status(400).json({
         error_code: 1,
         err_desc: "Không có file được tải lên",
+        message: "Không có file được tải lên",
         // error_detail: "",
       });
       return;
@@ -77,6 +81,8 @@ export default function importController(req, res: Response) {
         error_code: 3,
         err_desc:
           'Tên file không hợp lệ. Tên phải chứa "kinh_doanh", "chuyen_doi_so" hoặc "vien_thong"',
+        message:
+          'Tên file không hợp lệ. Tên phải chứa "kinh_doanh", "chuyen_doi_so" hoặc "vien_thong"',
         // error_detail: "Invaild name",
       });
       return;
@@ -104,6 +110,7 @@ export default function importController(req, res: Response) {
           res.status(400).json({
             error_code: 8,
             err_desc: error.message,
+            message: error.message,
           });
         });
     } catch (error) {
@@ -111,6 +118,7 @@ export default function importController(req, res: Response) {
       res.status(400).json({
         error_code: 2,
         err_desc: "File lỗi. Không thể đọc file",
+        message: "File lỗi. Không thể đọc file",
         // error_detail: error,
       });
     }
@@ -179,7 +187,7 @@ async function updateRow(item, index, fileTypeCode) {
       [name, "create"]
     )) as [any, any];
     if (rows?.length > 1) {
-      throw new Error("Lỗi lặp dự án mới - " + index);
+      throw new Error("Lỗi lặp dự án mới - " + (index+1));
     } else if (rows?.length == 1) {
       p_id = rows[0]?.id;
       // Ok
@@ -191,7 +199,7 @@ async function updateRow(item, index, fileTypeCode) {
       [customer]
     )) as [any, any];
     if (KH?.length > 1) {
-      throw new Error("Lỗi lặp khách hàng - " + index);
+      throw new Error("Lỗi lặp khách hàng - " + (index+1));
     } else if (KH?.length == 1) {
       c_id = KH[0]?.id;
       // Ok
@@ -207,12 +215,12 @@ async function updateRow(item, index, fileTypeCode) {
     // console.log(customer, AM_);
 
     if (AM_?.length > 1) {
-      throw new Error("Lỗi lặp am - " + index);
+      throw new Error("Lỗi lặp am - " + (index+1));
     } else if (AM_?.length == 1) {
       am_id = AM_[0]?.aid;
       // Ok
     } else {
-      throw new Error("Không thấy AM  - " + index);
+      throw new Error("Không thấy AM  - " + (index+1));
     }
 
     // pm
@@ -222,12 +230,12 @@ async function updateRow(item, index, fileTypeCode) {
         [pm]
       )) as [any, any];
       if (pm_?.length > 1) {
-        throw new Error("Lỗi lặp PM - " + index);
+        throw new Error("Lỗi lặp PM - " + (index+1));
       } else if (pm_?.length == 1) {
         pm_id = pm_[0]?.pid;
         // Ok
       } else {
-        throw new Error("Không thấy PM  - " + index);
+        throw new Error("Không thấy PM  - " + (index+1));
       }
     }
 

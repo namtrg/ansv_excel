@@ -29,6 +29,7 @@ export default async (req: Request, res: Response) => {
       res.status(400).json({
         error_code: 1,
         err_desc: "Invalid input: type hoặc week không hợp lệ",
+        message: "Invalid input: type hoặc week không hợp lệ",
         error_detail: "",
       });
       return;
@@ -37,6 +38,7 @@ export default async (req: Request, res: Response) => {
       res.status(400).json({
         error_code: 6,
         err_desc: "Type phải là 1, 2 hoặc 3",
+        message: "Type phải là 1, 2 hoặc 3",
         error_detail: "",
       });
       return;
@@ -160,6 +162,7 @@ export default async (req: Request, res: Response) => {
       res.status(200).json({
         error_code: 6,
         err_desc: "Không có dữ liệu",
+        message: "Không có dữ liệu",
         error_detail: "",
       });
       return;
