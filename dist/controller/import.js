@@ -81,16 +81,14 @@ function importController(req, res) {
          */
         try {
             const data = excel.readFile(req.file.path, headers);
-            console.log(fileTypeCode);
             const result = Promise.all(data.map((item, index) => updateRow(item, index, fileTypeCode)))
                 .then((res1) => {
-                console.log(res1);
                 res.status(200).json({
                     error_code: 0,
                     fileType,
                     fileTypeCode,
                     err_desc: null,
-                    data,
+                    message: "Import thành công " + res1.length + ' hàng'
                 });
             })
                 .catch((error) => {
