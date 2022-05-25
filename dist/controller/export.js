@@ -30,7 +30,7 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // 3 chuyển đổi số
     let connection;
     try {
-        const { type, week } = req.body;
+        const { type, week, username } = req.body;
         if (!isNumeric(type) || !isNumeric(week)) {
             res.status(400).json({
                 error_code: 1,
@@ -52,7 +52,15 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         connection = yield db_1.pool.getConnection();
         let data = [];
         if (+type === 1) {
-            const [rows, fields] = yield connection.execute("SELECT project.id, projects_types.name AS type, priorities.name AS priority, projects_status.name AS status, customers.name AS customer, project.week, project.year, project.projects_id, project.ma_so_ke_toan, project.name, project.pham_vi_cung_cap, project.tong_gia_tri_thuc_te, project.DAC, project.FAC, project.PAC, project.so_tien_tam_ung, project.ke_hoach_tam_ung, project.so_tien_DAC, project.ke_hoach_thanh_toan_DAC, project.thuc_te_thanh_toan_DAC, project.so_tien_PAC, project.ke_hoach_thanh_toan_PAC, project.thuc_te_thanh_toan_PAC, project.so_tien_FAC, project.ke_hoach_thanh_toan_FAC, project.thuc_te_thanh_toan_FAC, project.ke_hoach, project.general_issue, project.solution, project.ket_qua_thuc_hien_ke_hoach FROM project INNER JOIN projects_types ON project.project_type = projects_types.id INNER JOIN priorities ON project.priority = priorities.id INNER JOIN projects_status ON project.project_status = projects_status.id INNER JOIN customers ON project.customer = customers.id WHERE project.week = ? AND project.project_type = ?", [week, type]);
+            const [rows, fields] = yield connection.execute(`SELECT project.id, projects_types.name AS type, priorities.name AS priority, projects_status.name AS status, customers.name AS customer, project.week, project.year, project.projects_id, project.ma_so_ke_toan, project.name, project.pham_vi_cung_cap, project.tong_gia_tri_thuc_te, project.DAC, project.FAC, project.PAC, project.so_tien_tam_ung, project.ke_hoach_tam_ung, project.so_tien_DAC, project.ke_hoach_thanh_toan_DAC, project.thuc_te_thanh_toan_DAC, project.so_tien_PAC, project.ke_hoach_thanh_toan_PAC, project.thuc_te_thanh_toan_PAC, project.so_tien_FAC, project.ke_hoach_thanh_toan_FAC, project.thuc_te_thanh_toan_FAC, project.ke_hoach, project.general_issue, project.solution, project.ket_qua_thuc_hien_ke_hoach 
+        FROM project 
+        INNER JOIN projects_types ON project.project_type = projects_types.id 
+        INNER JOIN priorities ON project.priority = priorities.id 
+        INNER JOIN projects_status ON project.project_status = projects_status.id 
+        INNER JOIN customers ON project.customer = customers.id 
+        INNER JOIN pic on pic.project_id = project.id
+        INNER JOIN users on users.id = pic.pic
+        WHERE project.week = ? AND project.project_type = ? AND users.username = ?`, [week, type, username]);
             for (let i = 0; i < ((_a = rows) === null || _a === void 0 ? void 0 : _a.length) || 0; i++) {
                 const row = (_b = rows) === null || _b === void 0 ? void 0 : _b[i];
                 if ((_c = row.FAC) === null || _c === void 0 ? void 0 : _c.getTime) {
@@ -108,7 +116,7 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 row.PM = PM !== null && PM !== void 0 ? PM : "";
                 data.push(row);
             })));
-            // console.log(data);
+            console.log(data);
         }
         else if (+type === 2 || +type === 3) {
             const [rows] = yield connection.execute("SELECT project.id AS project_id, users.display_name AS pic_name, projects_types.name AS project_type, priorities.name AS priority, projects_status.name AS project_status, customers.name, project.week, project.year, project.name, project.description, project.tong_muc_dau_tu_du_kien, project.hinh_thuc_dau_tu, project.muc_do_kha_thi, project.phan_tich_SWOT, project.general_issue, project.ke_hoach, project.ket_qua_thuc_hien_ke_hoach FROM project INNER JOIN pic ON project.id = pic.project_id INNER JOIN users ON pic.pic = users.id INNER JOIN projects_types ON project.project_type = projects_types.id INNER JOIN priorities ON project.priority = priorities.id INNER JOIN projects_status ON project.project_status = projects_status.id INNER JOIN customers ON project.customer = customers.id WHERE project.week = ? AND project.project_type = ?", [week, type]);
