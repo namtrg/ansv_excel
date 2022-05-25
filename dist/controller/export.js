@@ -52,6 +52,9 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         connection = yield db_1.pool.getConnection();
         let data = [];
         if (+type === 1) {
+            let params = [week, type];
+            if (username)
+                params = [...params, username];
             const [rows, fields] = yield connection.execute(`SELECT project.id, projects_types.name AS type, priorities.name AS priority, projects_status.name AS status, customers.name AS customer, project.week, project.year, project.projects_id, project.ma_so_ke_toan, project.name, project.pham_vi_cung_cap, project.tong_gia_tri_thuc_te, project.DAC, project.FAC, project.PAC, project.so_tien_tam_ung, project.ke_hoach_tam_ung, project.so_tien_DAC, project.ke_hoach_thanh_toan_DAC, project.thuc_te_thanh_toan_DAC, project.so_tien_PAC, project.ke_hoach_thanh_toan_PAC, project.thuc_te_thanh_toan_PAC, project.so_tien_FAC, project.ke_hoach_thanh_toan_FAC, project.thuc_te_thanh_toan_FAC, project.ke_hoach, project.general_issue, project.solution, project.ket_qua_thuc_hien_ke_hoach 
         FROM project 
         INNER JOIN projects_types ON project.project_type = projects_types.id 
@@ -60,7 +63,8 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         INNER JOIN customers ON project.customer = customers.id 
         INNER JOIN pic on pic.project_id = project.id
         INNER JOIN users on users.id = pic.pic
-        WHERE project.week = ? AND project.project_type = ? AND users.username = ?`, [week, type, username]);
+        WHERE project.week = ? AND project.project_type = ? ` +
+                (username ? `AND users.username = ?` : ""), params);
             for (let i = 0; i < ((_a = rows) === null || _a === void 0 ? void 0 : _a.length) || 0; i++) {
                 const row = (_b = rows) === null || _b === void 0 ? void 0 : _b[i];
                 if ((_c = row.FAC) === null || _c === void 0 ? void 0 : _c.getTime) {
