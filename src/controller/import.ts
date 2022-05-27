@@ -6,19 +6,18 @@ import moment = require("moment");
 import { PoolConnection } from "mysql2/promise";
 import { pool } from "../db";
 
-
 // moment.locale('vi');
 // console.log(moment().week());
 
 const deleteFile = require("util").promisify(fs.unlink);
 
 export default function importController(req, res: Response) {
-  multer(req, res, function (error) {
+  multer(req, res, async function (error) {
     if (error) {
       res.status(400).json({
         error_code: 4,
         err_desc: "Định dạng tệp phải là xls hoặc xlsx",
-        message: "Định dạng tệp phải là xls hoặc xlsx"
+        message: "Định dạng tệp phải là xls hoặc xlsx",
         // error_detail: error,
       });
       return;
@@ -94,25 +93,48 @@ export default function importController(req, res: Response) {
     try {
       const data = excel.readFile(req.file.path, headers);
 
-      const result = Promise.all(
+      const result = await Promise.allSettled(
         data.map((item, index) => updateRow(item, index, fileTypeCode))
-      )
-        .then((res1) => {
-          res.status(200).json({
-            error_code: 0,
-            fileType,
-            fileTypeCode,
-            err_desc: null,
-            message: "Import thành công " + res1.length + ' hàng'
-          });
-        })
-        .catch((error) => {
-          res.status(400).json({
-            error_code: 8,
-            err_desc: error.message,
-            message: error.message,
-          });
+      );
+      // console.log(result);
+
+      const isSuccess = result.every((item) => item.status === "fulfilled");
+      if (!isSuccess) {
+        result.forEach(async (item) => {
+          const returnConnection = (item as any).value as PoolConnection;
+          if (returnConnection) {
+            await returnConnection.rollback();
+            returnConnection.release();
+          }
         });
+        return res.status(400).json({
+          error_code: 8,
+          fileType,
+          fileTypeCode,
+          err_desc: null,
+          message:
+            "Import không thành công các hàng: " +
+            result.map((item, index) => item.status === "rejected" ? index + 1 : -1).filter(it => it !== -1).join(", "),
+        });
+      }
+
+      await Promise.allSettled(
+        result.map(async (item) => {
+          const returnConnection = (item as any).value as PoolConnection;
+          if (returnConnection) {
+            await returnConnection.commit();
+            returnConnection.release();
+          }
+        })
+      );
+
+      return res.status(200).json({
+        error_code: 0,
+        fileType,
+        fileTypeCode,
+        err_desc: null,
+        message: "Import thành công " + result.length + " hàng",
+      });
     } catch (error) {
       console.log(error);
       res.status(400).json({
@@ -180,14 +202,25 @@ async function updateRow(item, index, fileTypeCode) {
       status_id = -1,
       am_id = -1,
       pm_id = -1;
+    let trungCungTuan = -1;
 
     // project
+
+    const [rows4] = (await connection.query(
+      "SELECT * FROM `project` WHERE name=? and interactive=? and week=?",
+      [name, "create", moment().week()]
+    )) as [any, any];
+
+    if (rows4?.length > 0) {
+      trungCungTuan = rows4?.[0]?.id;
+      console.log("trungCungTuan", trungCungTuan);
+    }
     const [rows] = (await connection.query(
       "SELECT * FROM `project` WHERE name=? and interactive=?",
       [name, "create"]
     )) as [any, any];
     if (rows?.length > 1) {
-      throw new Error("Lỗi lặp dự án mới - " + (index+1));
+      throw new Error("Lỗi lặp dự án mới - " + (index + 1));
     } else if (rows?.length == 1) {
       p_id = rows[0]?.id;
       // Ok
@@ -199,7 +232,7 @@ async function updateRow(item, index, fileTypeCode) {
       [customer]
     )) as [any, any];
     if (KH?.length > 1) {
-      throw new Error("Lỗi lặp khách hàng - " + (index+1));
+      throw new Error("Lỗi lặp khách hàng - " + (index + 1));
     } else if (KH?.length == 1) {
       c_id = KH[0]?.id;
       // Ok
@@ -215,12 +248,12 @@ async function updateRow(item, index, fileTypeCode) {
     // console.log(customer, AM_);
 
     if (AM_?.length > 1) {
-      throw new Error("Lỗi lặp am - " + (index+1));
+      throw new Error("Lỗi lặp am - " + (index + 1));
     } else if (AM_?.length == 1) {
       am_id = AM_[0]?.aid;
       // Ok
     } else {
-      throw new Error("Không thấy AM  - " + (index+1));
+      throw new Error("Không thấy AM  - " + (index + 1));
     }
 
     // pm
@@ -230,12 +263,12 @@ async function updateRow(item, index, fileTypeCode) {
         [pm]
       )) as [any, any];
       if (pm_?.length > 1) {
-        throw new Error("Lỗi lặp PM - " + (index+1));
+        throw new Error("Lỗi lặp PM - " + (index + 1));
       } else if (pm_?.length == 1) {
         pm_id = pm_[0]?.pid;
         // Ok
       } else {
-        throw new Error("Không thấy PM  - " + (index+1));
+        throw new Error("Không thấy PM  - " + (index + 1));
       }
     }
 
@@ -354,11 +387,18 @@ async function updateRow(item, index, fileTypeCode) {
         if (it === undefined) return null;
         return it;
       });
+      let sql;
 
-      let sql = `INSERT INTO project (project_type, priority, project_status, customer, week, year, ma_so_ke_toan, name, projects_id, pham_vi_cung_cap, DAC, PAC, FAC, so_tien_tam_ung, ke_hoach_tam_ung, so_tien_DAC, ke_hoach_thanh_toan_DAC, thuc_te_thanh_toan_DAC, so_tien_PAC, ke_hoach_thanh_toan_PAC, thuc_te_thanh_toan_PAC, so_tien_FAC, ke_hoach_thanh_toan_FAC, thuc_te_thanh_toan_FAC, ke_hoach, general_issue, solution, ket_qua_thuc_hien_ke_hoach, note, interactive, created_at, tong_gia_tri_thuc_te) VALUES (?, ?, ?, ?, ?, year(curdate()), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      if (trungCungTuan === -1)
+        sql = `INSERT INTO project (project_type, priority, project_status, customer, week, year, ma_so_ke_toan, name, projects_id, pham_vi_cung_cap, DAC, PAC, FAC, so_tien_tam_ung, ke_hoach_tam_ung, so_tien_DAC, ke_hoach_thanh_toan_DAC, thuc_te_thanh_toan_DAC, so_tien_PAC, ke_hoach_thanh_toan_PAC, thuc_te_thanh_toan_PAC, so_tien_FAC, ke_hoach_thanh_toan_FAC, thuc_te_thanh_toan_FAC, ke_hoach, general_issue, solution, ket_qua_thuc_hien_ke_hoach, note, interactive, created_at, tong_gia_tri_thuc_te) VALUES (?, ?, ?, ?, ?, year(curdate()), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      else
+        sql = `UPDATE project SET project_type=?, priority=?, project_status=?, customer=?, week=?, year=year(curdate()), ma_so_ke_toan=?, name=?, projects_id=?, pham_vi_cung_cap=?, DAC=?, PAC=?, FAC=?, so_tien_tam_ung=?, ke_hoach_tam_ung=?, so_tien_DAC=?, ke_hoach_thanh_toan_DAC=?, thuc_te_thanh_toan_DAC=?, so_tien_PAC=?, ke_hoach_thanh_toan_PAC=?, thuc_te_thanh_toan_PAC=?, so_tien_FAC=?, ke_hoach_thanh_toan_FAC=?, thuc_te_thanh_toan_FAC=?, ke_hoach=?, general_issue=?, solution=?, ket_qua_thuc_hien_ke_hoach=?, note=?, interactive=?, created_at=?, tong_gia_tri_thuc_te=? where id=?`;
 
-      const [rows] = (await connection.execute(sql, params)) as [any, any];
-      p_id = rows?.[0]?.insertId || rows?.insertId;
+      const [rows] = (await connection.execute(
+        sql,
+        trungCungTuan === -1 ? params : [...params, trungCungTuan]
+      )) as [any, any];
+      p_id = rows?.[0]?.insertId || rows?.insertId || trungCungTuan;
       // console.log(p_id, am_id, pm_id);
 
       const [new_AM] = await connection.execute(
@@ -394,29 +434,33 @@ async function updateRow(item, index, fileTypeCode) {
         if (it === undefined) return null;
         return it;
       });
-      const sql2 =
-        "INSERT INTO project (project_type, priority, project_status, customer, week, year, name, " +
-        "description, tong_muc_dau_tu_du_kien, hinh_thuc_dau_tu, muc_do_kha_thi, phan_tich_SWOT, " +
-        "ke_hoach, general_issue, solution, ket_qua_thuc_hien_ke_hoach, note, interactive, created_at) " +
-        "VALUES (?, ?, ?, ?, ?, year(curdate()), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      let sql;
+      console.log(trungCungTuan === -1 ? params2 : [...params2, trungCungTuan]);
+      
+      if (trungCungTuan === -1)
+        sql = `INSERT INTO project (project_type, priority, project_status, customer, week, year, name,
+          description, tong_muc_dau_tu_du_kien, hinh_thuc_dau_tu, muc_do_kha_thi, phan_tich_SWOT,
+          ke_hoach, general_issue, solution, ket_qua_thuc_hien_ke_hoach, note, interactive, created_at)
+          VALUES (?, ?, ?, ?, ?, year(curdate()), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      else
+        sql = `UPDATE project SET project_type=?, priority=?, project_status=?, customer=?, week=?, year=year(curdate()), name=?, description=?, tong_muc_dau_tu_du_kien=?, hinh_thuc_dau_tu=?, muc_do_kha_thi=?, phan_tich_SWOT=?, ke_hoach=?, general_issue=?, solution=?, ket_qua_thuc_hien_ke_hoach=?, note=?, interactive=?, created_at=? where id =?`;
       const [rows] = (await connection.execute(
-        sql2,
-        params2
+        sql,
+        trungCungTuan === -1 ? params2 : [...params2, trungCungTuan]
       )) as [any, any];
-      p_id = rows?.insertId || rows?.[0]?.insertId;
-      // console.log(p_id, am_id);
+      p_id = rows?.insertId || rows?.[0]?.insertId || trungCungTuan;
+      console.log(p_id, am_id);
 
       const [new_AM] = await connection.execute(
         "insert into `pic`(project_id, pic) values (?, ?)",
         [p_id, am_id]
       );
     }
-    await connection.commit();
-    connection.release();
   } catch (error) {
     console.log(error);
     await connection.rollback();
     connection.release();
     throw error;
   }
+  return connection;
 }

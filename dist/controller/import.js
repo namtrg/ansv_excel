@@ -20,119 +20,144 @@ const deleteFile = require("util").promisify(fs.unlink);
 function importController(req, res) {
     multer(req, res, function (error) {
         var _a;
-        if (error) {
-            res.status(400).json({
-                error_code: 4,
-                err_desc: "Định dạng tệp phải là xls hoặc xlsx",
-                message: "Định dạng tệp phải là xls hoặc xlsx"
-                // error_detail: error,
-            });
-            return;
-        }
-        const time = new Date();
-        if (!req.file) {
-            res.status(400).json({
-                error_code: 1,
-                err_desc: "Không có file được tải lên",
-                message: "Không có file được tải lên",
-                // error_detail: "",
-            });
-            return;
-        }
-        console.log(`[${time.getFullYear()}/${time.getMonth() + 1}/${time.getDate()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}]` +
-            " New file uploaded: " +
-            ((_a = req.file) === null || _a === void 0 ? void 0 : _a.originalname) +
-            ` from ip: ${req.headers["x-forwarded-for"] || req.socket.remoteAddress}`);
-        let headers = -1;
-        let fileType = "Unknown";
-        let fileTypeCode = -1;
-        if (req.file.originalname
-            .toLowerCase()
-            .replace(/\s+/g, "_")
-            .includes("trien_khai")) {
-            headers = excel.trienKhaiHeaders;
-            fileType = "Triển khai";
-            fileTypeCode = 1;
-        }
-        else if (req.file.originalname
-            .toLowerCase()
-            .replace(/\s+/g, "_")
-            .includes("vien_thong")) {
-            headers = excel.kinhDoanhHeaders;
-            fileType = "Viễn thông";
-            fileTypeCode = 2;
-        }
-        else if (req.file.originalname
-            .toLowerCase()
-            .replace(/\s+/g, "_")
-            .includes("chuyen_doi_so")) {
-            headers = excel.kinhDoanhHeaders;
-            fileType = "Chuyển đổi số";
-            fileTypeCode = 3;
-        }
-        else {
-            res.status(400).json({
-                error_code: 3,
-                err_desc: 'Tên file không hợp lệ. Tên phải chứa "kinh_doanh", "chuyen_doi_so" hoặc "vien_thong"',
-                message: 'Tên file không hợp lệ. Tên phải chứa "kinh_doanh", "chuyen_doi_so" hoặc "vien_thong"',
-                // error_detail: "Invaild name",
-            });
-            return;
-        }
-        /** Multer gives us file info in req.file object */
-        /** Check the extension of the incoming file and
-         *  use the appropriate module
-         */
-        try {
-            const data = excel.readFile(req.file.path, headers);
-            const result = Promise.all(data.map((item, index) => updateRow(item, index, fileTypeCode)))
-                .then((res1) => {
-                res.status(200).json({
+        return __awaiter(this, void 0, void 0, function* () {
+            if (error) {
+                res.status(400).json({
+                    error_code: 4,
+                    err_desc: "Định dạng tệp phải là xls hoặc xlsx",
+                    message: "Định dạng tệp phải là xls hoặc xlsx",
+                    // error_detail: error,
+                });
+                return;
+            }
+            const time = new Date();
+            if (!req.file) {
+                res.status(400).json({
+                    error_code: 1,
+                    err_desc: "Không có file được tải lên",
+                    message: "Không có file được tải lên",
+                    // error_detail: "",
+                });
+                return;
+            }
+            console.log(`[${time.getFullYear()}/${time.getMonth() + 1}/${time.getDate()} ${time.getHours()}:${time.getMinutes()}:${time.getSeconds()}]` +
+                " New file uploaded: " +
+                ((_a = req.file) === null || _a === void 0 ? void 0 : _a.originalname) +
+                ` from ip: ${req.headers["x-forwarded-for"] || req.socket.remoteAddress}`);
+            let headers = -1;
+            let fileType = "Unknown";
+            let fileTypeCode = -1;
+            if (req.file.originalname
+                .toLowerCase()
+                .replace(/\s+/g, "_")
+                .includes("trien_khai")) {
+                headers = excel.trienKhaiHeaders;
+                fileType = "Triển khai";
+                fileTypeCode = 1;
+            }
+            else if (req.file.originalname
+                .toLowerCase()
+                .replace(/\s+/g, "_")
+                .includes("vien_thong")) {
+                headers = excel.kinhDoanhHeaders;
+                fileType = "Viễn thông";
+                fileTypeCode = 2;
+            }
+            else if (req.file.originalname
+                .toLowerCase()
+                .replace(/\s+/g, "_")
+                .includes("chuyen_doi_so")) {
+                headers = excel.kinhDoanhHeaders;
+                fileType = "Chuyển đổi số";
+                fileTypeCode = 3;
+            }
+            else {
+                res.status(400).json({
+                    error_code: 3,
+                    err_desc: 'Tên file không hợp lệ. Tên phải chứa "kinh_doanh", "chuyen_doi_so" hoặc "vien_thong"',
+                    message: 'Tên file không hợp lệ. Tên phải chứa "kinh_doanh", "chuyen_doi_so" hoặc "vien_thong"',
+                    // error_detail: "Invaild name",
+                });
+                return;
+            }
+            /** Multer gives us file info in req.file object */
+            /** Check the extension of the incoming file and
+             *  use the appropriate module
+             */
+            try {
+                const data = excel.readFile(req.file.path, headers);
+                const result = yield Promise.allSettled(data.map((item, index) => updateRow(item, index, fileTypeCode)));
+                // console.log(result);
+                const isSuccess = result.every((item) => item.status === "fulfilled");
+                if (!isSuccess) {
+                    result.forEach((item) => __awaiter(this, void 0, void 0, function* () {
+                        const returnConnection = item.value;
+                        if (returnConnection) {
+                            yield returnConnection.rollback();
+                            returnConnection.release();
+                        }
+                    }));
+                    return res.status(400).json({
+                        error_code: 8,
+                        fileType,
+                        fileTypeCode,
+                        err_desc: null,
+                        message: "Import không thành công các hàng: " +
+                            result.map((item, index) => item.status === "rejected" ? index + 1 : -1).filter(it => it !== -1).join(", "),
+                    });
+                }
+                yield Promise.allSettled(result.map((item) => __awaiter(this, void 0, void 0, function* () {
+                    const returnConnection = item.value;
+                    if (returnConnection) {
+                        yield returnConnection.commit();
+                        returnConnection.release();
+                    }
+                })));
+                return res.status(200).json({
                     error_code: 0,
                     fileType,
                     fileTypeCode,
                     err_desc: null,
-                    message: "Import thành công " + res1.length + ' hàng'
+                    message: "Import thành công " + result.length + " hàng",
                 });
-            })
-                .catch((error) => {
+            }
+            catch (error) {
+                console.log(error);
                 res.status(400).json({
-                    error_code: 8,
-                    err_desc: error.message,
-                    message: error.message,
+                    error_code: 2,
+                    err_desc: "File lỗi. Không thể đọc file",
+                    message: "File lỗi. Không thể đọc file",
+                    // error_detail: error,
                 });
-            });
-        }
-        catch (error) {
-            console.log(error);
-            res.status(400).json({
-                error_code: 2,
-                err_desc: "File lỗi. Không thể đọc file",
-                message: "File lỗi. Không thể đọc file",
-                // error_detail: error,
-            });
-        }
-        deleteFile(req.file.path)
-            .then((res) => console.log("Cleaned file " + req.file.path))
-            .catch((err) => console.log(err));
+            }
+            deleteFile(req.file.path)
+                .then((res) => console.log("Cleaned file " + req.file.path))
+                .catch((err) => console.log(err));
+        });
     });
 }
 exports.default = importController;
 function updateRow(item, index, fileTypeCode) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     return __awaiter(this, void 0, void 0, function* () {
         let connection = yield db_1.pool.getConnection();
         yield connection.beginTransaction();
         try {
             let { stt, name, projects_id, ma_so_ke_toan, customer, tong_gia_tri_thuc_te, so_tien_DAC, DAC, ke_hoach_thanh_toan_DAC, thuc_te_thanh_toan_DAC, so_ngay_con_lai_DAC, so_tien_PAC, PAC, ke_hoach_thanh_toan_PAC, thuc_te_thanh_toan_PAC, so_ngay_con_lai_PAC, so_tien_FAC, FAC, ke_hoach_thanh_toan_FAC, thuc_te_thanh_toan_FAC, so_ngay_con_lai_FAC, pham_vi_cung_cap, general_issue, solution, priority, status, am, pm, manager_name, ket_qua_thuc_hien_ke_hoach, ket_qua_thuc_hien_tuan_nay, ke_hoach, ke_hoach_tuan_sau, description, hinh_thuc_dau_tu, tong_muc_dau_tu_du_kien, muc_do_kha_thi, phan_tich_SWOT, pic_name, } = item;
             let p_id = -1, c_id = -1, priority_id = -1, status_id = -1, am_id = -1, pm_id = -1;
+            let trungCungTuan = -1;
             // project
+            const [rows4] = (yield connection.query("SELECT * FROM `project` WHERE name=? and interactive=? and week=?", [name, "create", moment().week()]));
+            if ((rows4 === null || rows4 === void 0 ? void 0 : rows4.length) > 0) {
+                trungCungTuan = (_a = rows4 === null || rows4 === void 0 ? void 0 : rows4[0]) === null || _a === void 0 ? void 0 : _a.id;
+                console.log("trungCungTuan", trungCungTuan);
+            }
             const [rows] = (yield connection.query("SELECT * FROM `project` WHERE name=? and interactive=?", [name, "create"]));
             if ((rows === null || rows === void 0 ? void 0 : rows.length) > 1) {
                 throw new Error("Lỗi lặp dự án mới - " + (index + 1));
             }
             else if ((rows === null || rows === void 0 ? void 0 : rows.length) == 1) {
-                p_id = (_a = rows[0]) === null || _a === void 0 ? void 0 : _a.id;
+                p_id = (_b = rows[0]) === null || _b === void 0 ? void 0 : _b.id;
                 // Ok
             }
             // khachhang
@@ -141,7 +166,7 @@ function updateRow(item, index, fileTypeCode) {
                 throw new Error("Lỗi lặp khách hàng - " + (index + 1));
             }
             else if ((KH === null || KH === void 0 ? void 0 : KH.length) == 1) {
-                c_id = (_b = KH[0]) === null || _b === void 0 ? void 0 : _b.id;
+                c_id = (_c = KH[0]) === null || _c === void 0 ? void 0 : _c.id;
                 // Ok
             }
             else {
@@ -154,7 +179,7 @@ function updateRow(item, index, fileTypeCode) {
                 throw new Error("Lỗi lặp am - " + (index + 1));
             }
             else if ((AM_ === null || AM_ === void 0 ? void 0 : AM_.length) == 1) {
-                am_id = (_c = AM_[0]) === null || _c === void 0 ? void 0 : _c.aid;
+                am_id = (_d = AM_[0]) === null || _d === void 0 ? void 0 : _d.aid;
                 // Ok
             }
             else {
@@ -167,7 +192,7 @@ function updateRow(item, index, fileTypeCode) {
                     throw new Error("Lỗi lặp PM - " + (index + 1));
                 }
                 else if ((pm_ === null || pm_ === void 0 ? void 0 : pm_.length) == 1) {
-                    pm_id = (_d = pm_[0]) === null || _d === void 0 ? void 0 : _d.pid;
+                    pm_id = (_e = pm_[0]) === null || _e === void 0 ? void 0 : _e.pid;
                     // Ok
                 }
                 else {
@@ -175,7 +200,7 @@ function updateRow(item, index, fileTypeCode) {
                 }
             }
             // priority
-            switch ((_e = priority === null || priority === void 0 ? void 0 : priority.toLowerCase) === null || _e === void 0 ? void 0 : _e.call(priority)) {
+            switch ((_f = priority === null || priority === void 0 ? void 0 : priority.toLowerCase) === null || _f === void 0 ? void 0 : _f.call(priority)) {
                 case "first":
                     priority_id = 1;
                     break;
@@ -189,7 +214,7 @@ function updateRow(item, index, fileTypeCode) {
                     throw new Error("Priority không tồn tại");
             }
             // status
-            switch ((_f = status === null || status === void 0 ? void 0 : status.toLowerCase) === null || _f === void 0 ? void 0 : _f.call(status)) {
+            switch ((_g = status === null || status === void 0 ? void 0 : status.toLowerCase) === null || _g === void 0 ? void 0 : _g.call(status)) {
                 case "high":
                     status_id = 1;
                     break;
@@ -281,9 +306,13 @@ function updateRow(item, index, fileTypeCode) {
                         return null;
                     return it;
                 });
-                let sql = `INSERT INTO project (project_type, priority, project_status, customer, week, year, ma_so_ke_toan, name, projects_id, pham_vi_cung_cap, DAC, PAC, FAC, so_tien_tam_ung, ke_hoach_tam_ung, so_tien_DAC, ke_hoach_thanh_toan_DAC, thuc_te_thanh_toan_DAC, so_tien_PAC, ke_hoach_thanh_toan_PAC, thuc_te_thanh_toan_PAC, so_tien_FAC, ke_hoach_thanh_toan_FAC, thuc_te_thanh_toan_FAC, ke_hoach, general_issue, solution, ket_qua_thuc_hien_ke_hoach, note, interactive, created_at, tong_gia_tri_thuc_te) VALUES (?, ?, ?, ?, ?, year(curdate()), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-                const [rows] = (yield connection.execute(sql, params));
-                p_id = ((_g = rows === null || rows === void 0 ? void 0 : rows[0]) === null || _g === void 0 ? void 0 : _g.insertId) || (rows === null || rows === void 0 ? void 0 : rows.insertId);
+                let sql;
+                if (trungCungTuan === -1)
+                    sql = `INSERT INTO project (project_type, priority, project_status, customer, week, year, ma_so_ke_toan, name, projects_id, pham_vi_cung_cap, DAC, PAC, FAC, so_tien_tam_ung, ke_hoach_tam_ung, so_tien_DAC, ke_hoach_thanh_toan_DAC, thuc_te_thanh_toan_DAC, so_tien_PAC, ke_hoach_thanh_toan_PAC, thuc_te_thanh_toan_PAC, so_tien_FAC, ke_hoach_thanh_toan_FAC, thuc_te_thanh_toan_FAC, ke_hoach, general_issue, solution, ket_qua_thuc_hien_ke_hoach, note, interactive, created_at, tong_gia_tri_thuc_te) VALUES (?, ?, ?, ?, ?, year(curdate()), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                else
+                    sql = `UPDATE project SET project_type=?, priority=?, project_status=?, customer=?, week=?, year=year(curdate()), ma_so_ke_toan=?, name=?, projects_id=?, pham_vi_cung_cap=?, DAC=?, PAC=?, FAC=?, so_tien_tam_ung=?, ke_hoach_tam_ung=?, so_tien_DAC=?, ke_hoach_thanh_toan_DAC=?, thuc_te_thanh_toan_DAC=?, so_tien_PAC=?, ke_hoach_thanh_toan_PAC=?, thuc_te_thanh_toan_PAC=?, so_tien_FAC=?, ke_hoach_thanh_toan_FAC=?, thuc_te_thanh_toan_FAC=?, ke_hoach=?, general_issue=?, solution=?, ket_qua_thuc_hien_ke_hoach=?, note=?, interactive=?, created_at=?, tong_gia_tri_thuc_te=? where id=?`;
+                const [rows] = (yield connection.execute(sql, trungCungTuan === -1 ? params : [...params, trungCungTuan]));
+                p_id = ((_h = rows === null || rows === void 0 ? void 0 : rows[0]) === null || _h === void 0 ? void 0 : _h.insertId) || (rows === null || rows === void 0 ? void 0 : rows.insertId) || trungCungTuan;
                 // console.log(p_id, am_id, pm_id);
                 const [new_AM] = yield connection.execute("insert into `pic`(project_id, pic) values (?, ?)", [p_id, am_id]);
                 const [new_pm] = yield connection.execute("insert into `pic`(project_id, pic) values (?, ?)", [p_id, pm_id]);
@@ -313,17 +342,20 @@ function updateRow(item, index, fileTypeCode) {
                         return null;
                     return it;
                 });
-                const sql2 = "INSERT INTO project (project_type, priority, project_status, customer, week, year, name, " +
-                    "description, tong_muc_dau_tu_du_kien, hinh_thuc_dau_tu, muc_do_kha_thi, phan_tich_SWOT, " +
-                    "ke_hoach, general_issue, solution, ket_qua_thuc_hien_ke_hoach, note, interactive, created_at) " +
-                    "VALUES (?, ?, ?, ?, ?, year(curdate()), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-                const [rows] = (yield connection.execute(sql2, params2));
-                p_id = (rows === null || rows === void 0 ? void 0 : rows.insertId) || ((_h = rows === null || rows === void 0 ? void 0 : rows[0]) === null || _h === void 0 ? void 0 : _h.insertId);
-                // console.log(p_id, am_id);
+                let sql;
+                console.log(trungCungTuan === -1 ? params2 : [...params2, trungCungTuan]);
+                if (trungCungTuan === -1)
+                    sql = `INSERT INTO project (project_type, priority, project_status, customer, week, year, name,
+          description, tong_muc_dau_tu_du_kien, hinh_thuc_dau_tu, muc_do_kha_thi, phan_tich_SWOT,
+          ke_hoach, general_issue, solution, ket_qua_thuc_hien_ke_hoach, note, interactive, created_at)
+          VALUES (?, ?, ?, ?, ?, year(curdate()), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+                else
+                    sql = `UPDATE project SET project_type=?, priority=?, project_status=?, customer=?, week=?, year=year(curdate()), name=?, description=?, tong_muc_dau_tu_du_kien=?, hinh_thuc_dau_tu=?, muc_do_kha_thi=?, phan_tich_SWOT=?, ke_hoach=?, general_issue=?, solution=?, ket_qua_thuc_hien_ke_hoach=?, note=?, interactive=?, created_at=? where id =?`;
+                const [rows] = (yield connection.execute(sql, trungCungTuan === -1 ? params2 : [...params2, trungCungTuan]));
+                p_id = (rows === null || rows === void 0 ? void 0 : rows.insertId) || ((_j = rows === null || rows === void 0 ? void 0 : rows[0]) === null || _j === void 0 ? void 0 : _j.insertId) || trungCungTuan;
+                console.log(p_id, am_id);
                 const [new_AM] = yield connection.execute("insert into `pic`(project_id, pic) values (?, ?)", [p_id, am_id]);
             }
-            yield connection.commit();
-            connection.release();
         }
         catch (error) {
             console.log(error);
@@ -331,5 +363,6 @@ function updateRow(item, index, fileTypeCode) {
             connection.release();
             throw error;
         }
+        return connection;
     });
 }
