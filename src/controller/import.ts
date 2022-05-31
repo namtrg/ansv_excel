@@ -17,10 +17,7 @@ function excelDateToISODateString(excelDateNumber) {
 }
 function isNumeric(str: any) {
   if (typeof str != "string") return false; // we only process strings!
-  return (
-    !isNaN(+str) && 
-    !isNaN(parseFloat(str))
-  ); 
+  return !isNaN(+str) && !isNaN(parseFloat(str));
 }
 export default function importController(req, res: Response) {
   multer(req, res, async function (error) {
@@ -329,6 +326,7 @@ async function updateRow(item, index, fileTypeCode) {
       default:
         throw new Error("status không tồn tại");
     }
+
     // OK
     if (p_id !== -1) {
       const [rows] = await connection.execute(
@@ -427,16 +425,17 @@ async function updateRow(item, index, fileTypeCode) {
       )) as [any, any];
       p_id = rows?.[0]?.insertId || rows?.insertId || trungCungTuan;
       // console.log(p_id, am_id, pm_id);
+      if (trungCungTuan === -1) {
+        const [new_AM] = await connection.execute(
+          "insert into `pic`(project_id, pic) values (?, ?)",
+          [p_id, am_id]
+        );
 
-      const [new_AM] = await connection.execute(
-        "insert into `pic`(project_id, pic) values (?, ?)",
-        [p_id, am_id]
-      );
-
-      const [new_pm] = await connection.execute(
-        "insert into `pic`(project_id, pic) values (?, ?)",
-        [p_id, pm_id]
-      );
+        const [new_pm] = await connection.execute(
+          "insert into `pic`(project_id, pic) values (?, ?)",
+          [p_id, pm_id]
+        );
+      }
     } else {
       const params2 = [
         fileTypeCode,

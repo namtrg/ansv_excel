@@ -23,8 +23,7 @@ function excelDateToISODateString(excelDateNumber) {
 function isNumeric(str) {
     if (typeof str != "string")
         return false; // we only process strings!
-    return (!isNaN(+str) &&
-        !isNaN(parseFloat(str)));
+    return !isNaN(+str) && !isNaN(parseFloat(str));
 }
 function importController(req, res) {
     multer(req, res, function (error) {
@@ -334,8 +333,10 @@ function updateRow(item, index, fileTypeCode) {
                 const [rows] = (yield connection.execute(sql, trungCungTuan === -1 ? params : [...params, trungCungTuan]));
                 p_id = ((_h = rows === null || rows === void 0 ? void 0 : rows[0]) === null || _h === void 0 ? void 0 : _h.insertId) || (rows === null || rows === void 0 ? void 0 : rows.insertId) || trungCungTuan;
                 // console.log(p_id, am_id, pm_id);
-                const [new_AM] = yield connection.execute("insert into `pic`(project_id, pic) values (?, ?)", [p_id, am_id]);
-                const [new_pm] = yield connection.execute("insert into `pic`(project_id, pic) values (?, ?)", [p_id, pm_id]);
+                if (trungCungTuan === -1) {
+                    const [new_AM] = yield connection.execute("insert into `pic`(project_id, pic) values (?, ?)", [p_id, am_id]);
+                    const [new_pm] = yield connection.execute("insert into `pic`(project_id, pic) values (?, ?)", [p_id, pm_id]);
+                }
             }
             else {
                 const params2 = [
