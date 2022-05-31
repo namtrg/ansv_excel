@@ -74,7 +74,9 @@ kinhDoanhHeaders.forEach((it, index) => (kinhDoanhHeadersPosition[it[0]] = index
 const trienKhaiHeadersPosition = {};
 trienKhaiHeaders.forEach((it, index) => (trienKhaiHeadersPosition[it[0]] = index));
 const readFile = (filePath, headers) => {
-    const fileData = xlsx.parse(filePath);
+    const fileData = xlsx.parse(filePath, {
+        cellText: true,
+    });
     const data = fileData[0].data;
     const final = data
         .slice(1)

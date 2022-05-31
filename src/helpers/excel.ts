@@ -1,5 +1,5 @@
 const path = require("path");
-const xlsx = require("node-xlsx");
+import * as xlsx from "node-xlsx";
 const xlsxTemplate = require("xlsx-template");
 import { randomUUID } from "crypto";
 const fs = require("fs").promises;
@@ -72,11 +72,13 @@ trienKhaiHeaders.forEach(
 );
 
 const readFile = (filePath, headers) => {
-  const fileData = xlsx.parse(filePath);
+  const fileData = xlsx.parse(filePath, {
+    cellText: true,
+  });
   const data = fileData[0].data;
   const final = data
     .slice(1)
-    .map((item) => {
+    .map((item: any) => {
       if (item.length === 0) return;
       const result = {};
       headers.forEach(([key], index) => {

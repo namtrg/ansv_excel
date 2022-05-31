@@ -10,7 +10,18 @@ import { pool } from "../db";
 // console.log(moment().week());
 
 const deleteFile = require("util").promisify(fs.unlink);
-
+function excelDateToISODateString(excelDateNumber) {
+  return moment(
+    new Date(Math.round((excelDateNumber - 25569) * 86400 * 1000))
+  ).format("YYYY-MM-DD");
+}
+function isNumeric(str: any) {
+  if (typeof str != "string") return false; // we only process strings!
+  return (
+    !isNaN(+str) && 
+    !isNaN(parseFloat(str))
+  ); 
+}
 export default function importController(req, res: Response) {
   multer(req, res, async function (error) {
     if (error) {
@@ -114,7 +125,18 @@ export default function importController(req, res: Response) {
           err_desc: null,
           message:
             "Import không thành công các hàng: " +
-            result.map((item, index) => item.status === "rejected" ? index + 1 : -1).filter(it => it !== -1).join(", "),
+            result
+              .map((item, index) =>
+                item.status === "rejected" ? index + 1 : -1
+              )
+              .filter((it) => it !== -1)
+              .join(", "),
+          detail: result
+            .map((item, index) =>
+              item.status === "rejected" ? item.reason : null
+            )
+            .filter((it) => it !== null)
+            .join(", "),
         });
       }
 
@@ -316,6 +338,7 @@ async function updateRow(item, index, fileTypeCode) {
     }
     if (fileTypeCode === 1) {
       // không có
+      console.log(FAC);
 
       [
         DAC,
@@ -339,6 +362,9 @@ async function updateRow(item, index, fileTypeCode) {
         thuc_te_thanh_toan_FAC,
       ].map((it) => {
         if (!!!it) return null;
+        if (isNumeric(it) + "") {
+          return excelDateToISODateString(it);
+        }
         return moment(it, "DD/MM/YYYY").format("YYYY-MM-DD");
       });
       [so_tien_DAC, so_tien_FAC, so_tien_PAC] = [
@@ -350,6 +376,7 @@ async function updateRow(item, index, fileTypeCode) {
         if (it === undefined || String(it).trim() === "") return null;
         return it;
       });
+
       // console.log(DAC);
       let params = [
         fileTypeCode,
@@ -436,7 +463,7 @@ async function updateRow(item, index, fileTypeCode) {
       });
       let sql;
       console.log(trungCungTuan === -1 ? params2 : [...params2, trungCungTuan]);
-      
+
       if (trungCungTuan === -1)
         sql = `INSERT INTO project (project_type, priority, project_status, customer, week, year, name,
           description, tong_muc_dau_tu_du_kien, hinh_thuc_dau_tu, muc_do_kha_thi, phan_tich_SWOT,

@@ -17,6 +17,15 @@ const db_1 = require("../db");
 // moment.locale('vi');
 // console.log(moment().week());
 const deleteFile = require("util").promisify(fs.unlink);
+function excelDateToISODateString(excelDateNumber) {
+    return moment(new Date(Math.round((excelDateNumber - 25569) * 86400 * 1000))).format("YYYY-MM-DD");
+}
+function isNumeric(str) {
+    if (typeof str != "string")
+        return false; // we only process strings!
+    return (!isNaN(+str) &&
+        !isNaN(parseFloat(str)));
+}
 function importController(req, res) {
     multer(req, res, function (error) {
         var _a;
@@ -103,7 +112,14 @@ function importController(req, res) {
                         fileTypeCode,
                         err_desc: null,
                         message: "Import không thành công các hàng: " +
-                            result.map((item, index) => item.status === "rejected" ? index + 1 : -1).filter(it => it !== -1).join(", "),
+                            result
+                                .map((item, index) => item.status === "rejected" ? index + 1 : -1)
+                                .filter((it) => it !== -1)
+                                .join(", "),
+                        detail: result
+                            .map((item, index) => item.status === "rejected" ? item.reason : null)
+                            .filter((it) => it !== null)
+                            .join(", "),
                     });
                 }
                 yield Promise.allSettled(result.map((item) => __awaiter(this, void 0, void 0, function* () {
@@ -233,6 +249,7 @@ function updateRow(item, index, fileTypeCode) {
             }
             if (fileTypeCode === 1) {
                 // không có
+                console.log(FAC);
                 [
                     DAC,
                     PAC,
@@ -256,6 +273,9 @@ function updateRow(item, index, fileTypeCode) {
                 ].map((it) => {
                     if (!!!it)
                         return null;
+                    if (isNumeric(it) + "") {
+                        return excelDateToISODateString(it);
+                    }
                     return moment(it, "DD/MM/YYYY").format("YYYY-MM-DD");
                 });
                 [so_tien_DAC, so_tien_FAC, so_tien_PAC] = [
