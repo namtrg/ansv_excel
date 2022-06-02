@@ -270,10 +270,10 @@ function updateRow(item, index, fileTypeCode) {
                 ].map((it) => {
                     if (!!!it)
                         return null;
-                    // if (isNumeric(it) + "") {
-                    //   return excelDateToISODateString(it);
-                    // }
-                    return moment(it, "DD/MM/YYYY").format("YYYY-MM-DD");
+                    const date = moment(it, "DD/MM/YYYY");
+                    if (date.isValid())
+                        return date.format("YYYY-MM-DD");
+                    throw new Error(`Lỗi định dạng ngày ${it}`);
                 });
                 [so_tien_DAC, so_tien_FAC, so_tien_PAC] = [
                     so_tien_DAC,
