@@ -21,8 +21,6 @@ function excelDateToISODateString(excelDateNumber) {
     return moment(new Date(Math.round((excelDateNumber - 25569) * 86400 * 1000))).format("YYYY-MM-DD");
 }
 function isNumeric(str) {
-    if (typeof str != "string")
-        return false; // we only process strings!
     return !isNaN(+str) && !isNaN(parseFloat(str));
 }
 function importController(req, res) {
@@ -95,14 +93,14 @@ function importController(req, res) {
             try {
                 const data = excel.readFile(req.file.path, headers);
                 const result = yield Promise.allSettled(data.map((item, index) => updateRow(item, index, fileTypeCode)));
-                // console.log(result);
+                console.log(result);
                 const isSuccess = result.every((item) => item.status === "fulfilled");
                 if (!isSuccess) {
                     result.forEach((item) => __awaiter(this, void 0, void 0, function* () {
                         const returnConnection = item.value;
                         if (returnConnection) {
                             yield returnConnection.rollback();
-                            returnConnection.release();
+                            yield returnConnection.release();
                         }
                     }));
                     return res.status(400).json({
@@ -137,7 +135,7 @@ function importController(req, res) {
                 });
             }
             catch (error) {
-                console.log(error);
+                // console.log(error);
                 res.status(400).json({
                     error_code: 2,
                     err_desc: "File lỗi. Không thể đọc file",
@@ -165,7 +163,7 @@ function updateRow(item, index, fileTypeCode) {
             const [rows4] = (yield connection.query("SELECT * FROM `project` WHERE name=? and interactive=? and week=?", [name, "create", moment().week()]));
             if ((rows4 === null || rows4 === void 0 ? void 0 : rows4.length) > 0) {
                 trungCungTuan = (_a = rows4 === null || rows4 === void 0 ? void 0 : rows4[0]) === null || _a === void 0 ? void 0 : _a.id;
-                console.log("trungCungTuan", trungCungTuan);
+                // console.log("trungCungTuan", trungCungTuan);
             }
             const [rows] = (yield connection.query("SELECT * FROM `project` WHERE name=? and interactive=?", [name, "create"]));
             if ((rows === null || rows === void 0 ? void 0 : rows.length) > 1) {
@@ -248,7 +246,7 @@ function updateRow(item, index, fileTypeCode) {
             }
             if (fileTypeCode === 1) {
                 // không có
-                console.log(FAC);
+                // console.log(FAC);
                 [
                     DAC,
                     PAC,
@@ -272,9 +270,9 @@ function updateRow(item, index, fileTypeCode) {
                 ].map((it) => {
                     if (!!!it)
                         return null;
-                    if (isNumeric(it) + "") {
-                        return excelDateToISODateString(it);
-                    }
+                    // if (isNumeric(it) + "") {
+                    //   return excelDateToISODateString(it);
+                    // }
                     return moment(it, "DD/MM/YYYY").format("YYYY-MM-DD");
                 });
                 [so_tien_DAC, so_tien_FAC, so_tien_PAC] = [
@@ -379,10 +377,13 @@ function updateRow(item, index, fileTypeCode) {
             }
         }
         catch (error) {
-            console.log(error);
+            // console.log(error);
             yield connection.rollback();
-            connection.release();
+            yield connection.release();
             throw error;
+        }
+        finally {
+            yield connection.release();
         }
         return connection;
     });

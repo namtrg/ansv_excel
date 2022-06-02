@@ -16,7 +16,6 @@ function excelDateToISODateString(excelDateNumber) {
   ).format("YYYY-MM-DD");
 }
 function isNumeric(str: any) {
-  if (typeof str != "string") return false; // we only process strings!
   return !isNaN(+str) && !isNaN(parseFloat(str));
 }
 export default function importController(req, res: Response) {
@@ -104,7 +103,7 @@ export default function importController(req, res: Response) {
       const result = await Promise.allSettled(
         data.map((item, index) => updateRow(item, index, fileTypeCode))
       );
-      // console.log(result);
+      console.log(result);
 
       const isSuccess = result.every((item) => item.status === "fulfilled");
       if (!isSuccess) {
@@ -112,7 +111,7 @@ export default function importController(req, res: Response) {
           const returnConnection = (item as any).value as PoolConnection;
           if (returnConnection) {
             await returnConnection.rollback();
-            returnConnection.release();
+            await returnConnection.release();
           }
         });
         return res.status(400).json({
@@ -155,7 +154,7 @@ export default function importController(req, res: Response) {
         message: "Import thành công " + result.length + " hàng",
       });
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       res.status(400).json({
         error_code: 2,
         err_desc: "File lỗi. Không thể đọc file",
@@ -232,7 +231,7 @@ async function updateRow(item, index, fileTypeCode) {
 
     if (rows4?.length > 0) {
       trungCungTuan = rows4?.[0]?.id;
-      console.log("trungCungTuan", trungCungTuan);
+      // console.log("trungCungTuan", trungCungTuan);
     }
     const [rows] = (await connection.query(
       "SELECT * FROM `project` WHERE name=? and interactive=?",
@@ -336,7 +335,7 @@ async function updateRow(item, index, fileTypeCode) {
     }
     if (fileTypeCode === 1) {
       // không có
-      console.log(FAC);
+      // console.log(FAC);
 
       [
         DAC,
@@ -360,9 +359,10 @@ async function updateRow(item, index, fileTypeCode) {
         thuc_te_thanh_toan_FAC,
       ].map((it) => {
         if (!!!it) return null;
-        if (isNumeric(it) + "") {
-          return excelDateToISODateString(it);
-        }
+        // if (isNumeric(it) + "") {
+        //   return excelDateToISODateString(it);
+        // }
+        
         return moment(it, "DD/MM/YYYY").format("YYYY-MM-DD");
       });
       [so_tien_DAC, so_tien_FAC, so_tien_PAC] = [
@@ -483,10 +483,12 @@ async function updateRow(item, index, fileTypeCode) {
       );
     }
   } catch (error) {
-    console.log(error);
+    // console.log(error);
     await connection.rollback();
-    connection.release();
+    await connection.release();
     throw error;
+  } finally {
+    await connection.release();
   }
   return connection;
 }
