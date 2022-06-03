@@ -103,7 +103,7 @@ export default function importController(req, res: Response) {
       const result = await Promise.allSettled(
         data.map((item, index) => updateRow(item, index, fileTypeCode))
       );
-      // console.log(result);
+      console.log(result.filter((item) => item.status === "rejected"));
 
       const isSuccess = result.every((item) => item.status === "fulfilled");
       if (!isSuccess) {
@@ -129,10 +129,10 @@ export default function importController(req, res: Response) {
               .join(", "),
           detail: result
             .map((item, index) =>
-              item.status === "rejected" ? item.reason : null
+              item.status === "rejected" ? (index + item.reason) : null
             )
             .filter((it) => it !== null)
-            .join(", "),
+            .join(".\n"),
         });
       }
 
@@ -423,7 +423,7 @@ async function updateRow(item, index, fileTypeCode) {
         trungCungTuan === -1 ? params : [...params, trungCungTuan]
       )) as [any, any];
       p_id = rows?.[0]?.insertId || rows?.insertId || trungCungTuan;
-      // console.log(p_id, am_id, pm_id);
+      console.log(p_id, am_id, pm_id);
       if (trungCungTuan === -1) {
         const [new_AM] = await connection.execute(
           "insert into `pic`(project_id, pic) values (?, ?)",
