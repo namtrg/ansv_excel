@@ -93,7 +93,7 @@ function importController(req, res) {
             try {
                 const data = excel.readFile(req.file.path, headers);
                 const result = yield Promise.allSettled(data.map((item, index) => updateRow(item, index, fileTypeCode)));
-                // console.log(result);
+                console.log(result.filter((item) => item.status === "rejected"));
                 const isSuccess = result.every((item) => item.status === "fulfilled");
                 if (!isSuccess) {
                     result.forEach((item) => __awaiter(this, void 0, void 0, function* () {
@@ -114,9 +114,9 @@ function importController(req, res) {
                                 .filter((it) => it !== -1)
                                 .join(", "),
                         detail: result
-                            .map((item, index) => item.status === "rejected" ? item.reason : null)
+                            .map((item, index) => item.status === "rejected" ? (index + item.reason) : null)
                             .filter((it) => it !== null)
-                            .join(", "),
+                            .join(".\n"),
                     });
                 }
                 yield Promise.allSettled(result.map((item) => __awaiter(this, void 0, void 0, function* () {
@@ -332,7 +332,7 @@ function updateRow(item, index, fileTypeCode) {
                     sql = `UPDATE project SET project_type=?, priority=?, project_status=?, customer=?, week=?, year=year(curdate()), ma_so_ke_toan=?, name=?, projects_id=?, pham_vi_cung_cap=?, DAC=?, PAC=?, FAC=?, so_tien_tam_ung=?, ke_hoach_tam_ung=?, so_tien_DAC=?, ke_hoach_thanh_toan_DAC=?, thuc_te_thanh_toan_DAC=?, so_tien_PAC=?, ke_hoach_thanh_toan_PAC=?, thuc_te_thanh_toan_PAC=?, so_tien_FAC=?, ke_hoach_thanh_toan_FAC=?, thuc_te_thanh_toan_FAC=?, ke_hoach=?, general_issue=?, solution=?, ket_qua_thuc_hien_ke_hoach=?, note=?, interactive=?, created_at=?, tong_gia_tri_thuc_te=? where id=?`;
                 const [rows] = (yield connection.execute(sql, trungCungTuan === -1 ? params : [...params, trungCungTuan]));
                 p_id = ((_h = rows === null || rows === void 0 ? void 0 : rows[0]) === null || _h === void 0 ? void 0 : _h.insertId) || (rows === null || rows === void 0 ? void 0 : rows.insertId) || trungCungTuan;
-                // console.log(p_id, am_id, pm_id);
+                console.log(p_id, am_id, pm_id);
                 if (trungCungTuan === -1) {
                     const [new_AM] = yield connection.execute("insert into `pic`(project_id, pic) values (?, ?)", [p_id, am_id]);
                     const [new_pm] = yield connection.execute("insert into `pic`(project_id, pic) values (?, ?)", [p_id, pm_id]);
