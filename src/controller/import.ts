@@ -129,7 +129,7 @@ export default function importController(req, res: Response) {
               .join(", "),
           detail: result
             .map((item, index) =>
-              item.status === "rejected" ? (index + item.reason) : null
+              item.status === "rejected" ? (`Hàng ${index+1}: ${item.reason}`) : null
             )
             .filter((it) => it !== null)
             .join(".\n"),
