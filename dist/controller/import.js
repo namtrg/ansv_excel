@@ -275,7 +275,7 @@ function updateRow(item, index, fileTypeCode) {
                     const date = moment(it, "DD/MM/YYYY");
                     if (date.isValid())
                         return date.format("YYYY-MM-DD");
-                    throw new Error(`Lỗi định dạng ngày: ${element} - dòng: ${index + 1}`);
+                    throw new Error(`Lỗi định dạng ngày: ${element}`);
                 });
                 [so_tien_DAC, so_tien_FAC, so_tien_PAC] = [
                     so_tien_DAC,
