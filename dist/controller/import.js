@@ -93,7 +93,7 @@ function importController(req, res) {
             try {
                 const data = excel.readFile(req.file.path, headers);
                 const result = yield Promise.allSettled(data.map((item, index) => updateRow(item, index, fileTypeCode)));
-                console.log(result);
+                // console.log(result);
                 const isSuccess = result.every((item) => item.status === "fulfilled");
                 if (!isSuccess) {
                     result.forEach((item) => __awaiter(this, void 0, void 0, function* () {
@@ -247,6 +247,17 @@ function updateRow(item, index, fileTypeCode) {
             if (fileTypeCode === 1) {
                 // không có
                 // console.log(FAC);
+                let newParam = {
+                    DAC,
+                    PAC,
+                    FAC,
+                    ke_hoach_thanh_toan_DAC,
+                    thuc_te_thanh_toan_DAC,
+                    ke_hoach_thanh_toan_PAC,
+                    thuc_te_thanh_toan_PAC,
+                    ke_hoach_thanh_toan_FAC,
+                    thuc_te_thanh_toan_FAC,
+                };
                 [
                     DAC,
                     PAC,
@@ -257,23 +268,14 @@ function updateRow(item, index, fileTypeCode) {
                     thuc_te_thanh_toan_PAC,
                     ke_hoach_thanh_toan_FAC,
                     thuc_te_thanh_toan_FAC,
-                ] = [
-                    DAC,
-                    PAC,
-                    FAC,
-                    ke_hoach_thanh_toan_DAC,
-                    thuc_te_thanh_toan_DAC,
-                    ke_hoach_thanh_toan_PAC,
-                    thuc_te_thanh_toan_PAC,
-                    ke_hoach_thanh_toan_FAC,
-                    thuc_te_thanh_toan_FAC,
-                ].map((it) => {
+                ] = Object.keys(newParam).map((element) => {
+                    const it = newParam[element];
                     if (!!!it)
                         return null;
                     const date = moment(it, "DD/MM/YYYY");
                     if (date.isValid())
                         return date.format("YYYY-MM-DD");
-                    throw new Error(`Lỗi định dạng ngày ${it}`);
+                    throw new Error(`Lỗi định dạng ngày: ${element}`);
                 });
                 [so_tien_DAC, so_tien_FAC, so_tien_PAC] = [
                     so_tien_DAC,
@@ -362,7 +364,6 @@ function updateRow(item, index, fileTypeCode) {
                     return it;
                 });
                 let sql;
-                console.log(trungCungTuan === -1 ? params2 : [...params2, trungCungTuan]);
                 if (trungCungTuan === -1)
                     sql = `INSERT INTO project (project_type, priority, project_status, customer, week, year, name,
           description, tong_muc_dau_tu_du_kien, hinh_thuc_dau_tu, muc_do_kha_thi, phan_tich_SWOT,
