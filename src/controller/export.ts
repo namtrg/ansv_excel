@@ -2,6 +2,7 @@ const excel = require("../helpers/excel");
 import { Request, Response } from "express";
 import { PoolConnection } from "mysql2/promise";
 import { pool } from "../db";
+import { htmlToText } from "html-to-text";
 
 function addZero(number: number): string {
   return number < 10 ? "0" + number : number.toString();
@@ -26,7 +27,7 @@ export default async (req: Request, res: Response) => {
   try {
     const { type, week, username } = req.body;
     console.log({ type, week, username });
-    
+
     if (!isNumeric(type) || !isNumeric(week)) {
       res.status(400).json({
         error_code: 1,
@@ -112,6 +113,16 @@ export default async (req: Request, res: Response) => {
         row.so_tien_DAC ||= "";
         row.so_tien_FAC ||= "";
         row.so_tien_PAC ||= "";
+        
+        [
+          "ke_hoach",
+          "general_issue",
+          "solution",
+          "ket_qua_thuc_hien_ke_hoach",
+        ].forEach((it) => {
+          const test = htmlToText(row[it]);
+          row[it] = test;
+        });
       }
       await Promise.allSettled(
         result.map(async (row) => {
@@ -140,8 +151,17 @@ export default async (req: Request, res: Response) => {
 
       const result = JSON.parse(JSON.stringify(rows)) || [];
 
-      for (const row of result) {
+      for (const r in result) {
+        const row = result[r];
         row.muc_do_kha_thi ||= "";
+        [
+          "description",
+          "ke_hoach",
+          "ket_qua_thuc_hien_ke_hoach",
+        ].forEach((it) => {
+          const test = htmlToText(row[it]);
+          row[it] = test;
+        });
       }
 
       // await Promise.allSettled(
@@ -156,8 +176,9 @@ export default async (req: Request, res: Response) => {
       // );
       data = result;
     }
-    // console.log(data);
 
+    // console.log(data);
+    
     // if (!data) {
     //   res.status(400).json({
     //     error_code: 5,
