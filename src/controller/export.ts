@@ -115,6 +115,7 @@ export default async (req: Request, res: Response) => {
         row.so_tien_PAC ||= "";
         
         [
+          "pham_vi_cung_cap",
           "ke_hoach",
           "general_issue",
           "solution",

@@ -113,6 +113,7 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 row.so_tien_FAC || (row.so_tien_FAC = "");
                 row.so_tien_PAC || (row.so_tien_PAC = "");
                 [
+                    "pham_vi_cung_cap",
                     "ke_hoach",
                     "general_issue",
                     "solution",
