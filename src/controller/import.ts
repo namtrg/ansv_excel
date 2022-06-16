@@ -225,8 +225,8 @@ async function updateRow(item, index, fileTypeCode) {
     // project
 
     const [rows4] = (await connection.query(
-      "SELECT * FROM `project` WHERE name=? and interactive=? and week=?",
-      [name, "create", moment().week()]
+      "SELECT * FROM `project` WHERE name=? and interactive IN (?, ?) and week=?",
+      [name, "create", "update", moment().week()]
     )) as [any, any];
 
     if (rows4?.length > 0) {
@@ -234,8 +234,8 @@ async function updateRow(item, index, fileTypeCode) {
       // console.log("trungCungTuan", trungCungTuan);
     }
     const [rows] = (await connection.query(
-      "SELECT * FROM `project` WHERE name=? and interactive=?",
-      [name, "create"]
+      "SELECT * FROM `project` WHERE name=? and interactive IN (?, ?)",
+      [name, "create", "update"]
     )) as [any, any];
     if (rows?.length > 1) {
       throw new Error("Lỗi lặp dự án mới - " + (index + 1));

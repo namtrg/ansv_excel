@@ -160,12 +160,12 @@ function updateRow(item, index, fileTypeCode) {
             let p_id = -1, c_id = -1, priority_id = -1, status_id = -1, am_id = -1, pm_id = -1;
             let trungCungTuan = -1;
             // project
-            const [rows4] = (yield connection.query("SELECT * FROM `project` WHERE name=? and interactive=? and week=?", [name, "create", moment().week()]));
+            const [rows4] = (yield connection.query("SELECT * FROM `project` WHERE name=? and interactive IN (?, ?) and week=?", [name, "create", "update", moment().week()]));
             if ((rows4 === null || rows4 === void 0 ? void 0 : rows4.length) > 0) {
                 trungCungTuan = (_a = rows4 === null || rows4 === void 0 ? void 0 : rows4[0]) === null || _a === void 0 ? void 0 : _a.id;
                 // console.log("trungCungTuan", trungCungTuan);
             }
-            const [rows] = (yield connection.query("SELECT * FROM `project` WHERE name=? and interactive=?", [name, "create"]));
+            const [rows] = (yield connection.query("SELECT * FROM `project` WHERE name=? and interactive IN (?, ?)", [name, "create", "update"]));
             if ((rows === null || rows === void 0 ? void 0 : rows.length) > 1) {
                 throw new Error("Lỗi lặp dự án mới - " + (index + 1));
             }
