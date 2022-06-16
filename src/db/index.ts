@@ -41,7 +41,7 @@ setInterval(async () => {
       process.exit();
     })
   });
-})
+}, 60000);
 
 const checkConnection = (callback: Function) => {
   pool

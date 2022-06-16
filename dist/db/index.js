@@ -49,7 +49,7 @@ setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
             process.exit();
         });
     });
-}));
+}), 60000);
 const checkConnection = (callback) => {
     pool
         .getConnection()
