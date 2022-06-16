@@ -170,7 +170,7 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         //   });
         //   return;
         // }
-        connection.release();
+        connection.destroy();
         if (!(data === null || data === void 0 ? void 0 : data[0])) {
             res.status(200).json({
                 error_code: 6,
@@ -212,6 +212,6 @@ exports.default = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             err_desc: error.message,
             error_detail: error.stack,
         });
-        (_m = connection === null || connection === void 0 ? void 0 : connection.release) === null || _m === void 0 ? void 0 : _m.call(connection);
+        (_m = connection === null || connection === void 0 ? void 0 : connection.destroy) === null || _m === void 0 ? void 0 : _m.call(connection);
     }
 });

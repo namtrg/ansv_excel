@@ -1,4 +1,13 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkConnection = exports.pool = void 0;
 const promise_1 = require("mysql2/promise");
@@ -22,11 +31,30 @@ const pool = (0, promise_1.createPool)({
     // rowsAsArray: true,
 });
 exports.pool = pool;
+let errorFailCount = 0;
+setInterval(() => __awaiter(void 0, void 0, void 0, function* () {
+    yield pool.getConnection().then((connection) => __awaiter(void 0, void 0, void 0, function* () {
+        yield connection.query("SELECT 1");
+        errorFailCount = 0;
+        connection.destroy();
+    })).catch((err) => {
+        if (errorFailCount < 10) {
+            errorFailCount++;
+            console.log("Error:", err);
+            return;
+        }
+        console.log("Connection to database failed. Restart after 5s");
+        setTimeout(function () {
+            console.log("Restarting...");
+            process.exit();
+        });
+    });
+}));
 const checkConnection = (callback) => {
     pool
         .getConnection()
-        .then((conection) => {
-        conection.release();
+        .then((connection) => {
+        connection.destroy();
         callback();
     })
         .catch((err) => {

@@ -189,7 +189,7 @@ export default async (req: Request, res: Response) => {
     //   return;
     // }
 
-    connection.release();
+    connection.destroy();
 
     if (!data?.[0]) {
       res.status(200).json({
@@ -237,6 +237,6 @@ export default async (req: Request, res: Response) => {
       err_desc: error.message,
       error_detail: error.stack,
     });
-    connection?.release?.();
+    connection?.destroy?.();
   }
 };

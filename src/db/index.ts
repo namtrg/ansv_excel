@@ -22,11 +22,32 @@ const pool: Pool = createPool({
   // rowsAsArray: true,
 });
 
+let errorFailCount = 0;
+
+setInterval(async () => {
+  await pool.getConnection().then(async(connection) => {
+    await connection.query("SELECT 1");
+    errorFailCount = 0;
+    connection.destroy();
+  }).catch((err) => {
+    if(errorFailCount < 10) {
+      errorFailCount++;
+      console.log("Error:", err);
+      return;
+    }
+    console.log("Connection to database failed. Restart after 5s");
+    setTimeout(function () {
+      console.log("Restarting...");
+      process.exit();
+    })
+  });
+})
+
 const checkConnection = (callback: Function) => {
   pool
     .getConnection()
-    .then((conection) => {
-      conection.release();
+    .then((connection) => {
+      connection.destroy();
       callback();
     })
     .catch((err) => {
